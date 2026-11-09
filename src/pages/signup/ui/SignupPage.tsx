@@ -1,0 +1,13 @@
+import { SignupForm } from "@/features/signup";
+import { AuthBrandPanel } from "@/widgets/auth-brand-panel";
+
+export function SignupPage() {
+  return (
+    <div className="flex min-h-screen">
+      <AuthBrandPanel />
+      <main className="flex flex-1 items-center justify-center bg-page px-16 py-16">
+        <SignupForm />
+      </main>
+    </div>
+  );
+}

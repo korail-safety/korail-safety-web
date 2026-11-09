@@ -52,15 +52,15 @@ export function LoginForm() {
       onSubmit={handleSubmit(onSubmit)}
       className="flex w-full max-w-[560px] flex-col"
     >
-      <p className="text-xs text-primary">
-        철도 안전교육 콘텐츠 제작 지원 시스템
+      <p className="text-sm font-semibold text-primary">
+        철도 안전교육 콘텐츠 제작 자동화 시스템
       </p>
       <h2 className="mt-4 text-3xl font-bold text-ink">로그인</h2>
       <p className="mt-1 text-sm text-ink-secondary">
         업무 계정으로 로그인해 주세요.
       </p>
 
-      <div className="mt-[46px] flex flex-col gap-[21px]">
+      <div className="mt-[46px] flex flex-col gap-2">
         <TextField
           label="아이디"
           placeholder="사번 또는 아이디를 입력하세요."
@@ -78,11 +78,8 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="mt-[7px] flex items-center justify-between">
+      <div className="mt-1 flex items-center justify-between">
         <Checkbox label="아이디 저장" {...register("rememberId")} />
-        <Link href={ROUTES.findAccount} className="text-xs text-ink">
-          아이디 · 비밀번호 찾기
-        </Link>
       </div>
 
       <Button
@@ -93,11 +90,20 @@ export function LoginForm() {
         {isPending ? "로그인 중..." : "로그인"}
       </Button>
 
-      {isError && (
-        <p role="alert" className="mt-[21px] text-xs text-danger">
-          아이디 또는 비밀번호를 확인해 주세요.
-        </p>
-      )}
+      <p className="mt-4 text-xs text-ink-secondary">
+        아직 계정이 없나요?{" "}
+        <Link
+          href={ROUTES.signup}
+          className="font-bold text-primary underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current"
+        >
+          회원가입
+        </Link>
+      </p>
+
+      {/* 메시지 자리를 미리 확보해 에러 시 레이아웃이 밀리지 않게 한다 */}
+      <p role="alert" className="mt-[21px] h-[18px] text-xs text-danger">
+        {isError && "아이디 또는 비밀번호를 확인해 주세요."}
+      </p>
     </form>
   );
 }

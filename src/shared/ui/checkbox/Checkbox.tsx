@@ -31,6 +31,7 @@ export function Checkbox({ label, id, className, ...props }: CheckboxProps) {
           type="checkbox"
           className={cn(
             "peer size-full cursor-[inherit] appearance-none rounded-[4px] border border-canvas bg-white transition-colors",
+            "not-disabled:hover:border-primary",
             "checked:border-primary checked:bg-primary",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
             "disabled:bg-surface-disabled disabled:checked:border-canvas",
@@ -39,7 +40,7 @@ export function Checkbox({ label, id, className, ...props }: CheckboxProps) {
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 hidden items-center justify-center text-xs font-bold text-white peer-checked:flex peer-disabled:text-ink-disabled"
+          className="pointer-events-none absolute inset-0 flex scale-75 items-center justify-center text-xs font-bold text-white opacity-0 transition-[opacity,scale] peer-checked:scale-100 peer-checked:opacity-100 peer-disabled:text-ink-disabled"
         >
           ✓
         </span>

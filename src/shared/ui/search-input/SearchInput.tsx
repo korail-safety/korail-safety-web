@@ -26,7 +26,7 @@ export function SearchInput({
     <div
       className={cn(
         "flex h-9 w-[300px] items-center gap-[15px] rounded-control border border-canvas bg-white px-[15px]",
-        "focus-within:border-primary",
+        "transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
         className,
       )}
     >
@@ -43,7 +43,7 @@ export function SearchInput({
           type="button"
           onClick={onClear}
           aria-label="검색어 지우기"
-          className="shrink-0 text-2xs text-ink-tertiary"
+          className="shrink-0 cursor-pointer text-2xs text-ink-tertiary transition-colors hover:text-ink"
         >
           ✕
         </button>

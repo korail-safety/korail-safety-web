@@ -4,15 +4,20 @@ import { useId, type Ref, type TextareaHTMLAttributes } from "react";
 
 import { cn } from "@/shared/lib";
 
+import { FieldError } from "../field-error";
+
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  /** false면 에러가 없을 때 메시지 자리를 비워두지 않는다. (기본 true) */
+  reserveErrorSpace?: boolean;
   ref?: Ref<HTMLTextAreaElement>;
 }
 
 export function Textarea({
   label,
   error,
+  reserveErrorSpace = true,
   id,
   rows = 4,
   className,
@@ -35,7 +40,7 @@ export function Textarea({
         aria-invalid={!!error}
         aria-describedby={error ? errorId : undefined}
         className={cn(
-          "w-full resize-none rounded-control border bg-white px-4 py-[15px] text-xs leading-[1.5] text-ink outline-none transition-colors",
+          "w-full resize-none rounded-control border bg-white px-4 py-[15px] text-xs leading-[1.5] text-ink outline-none transition-[color,background-color,border-color,box-shadow]",
           "placeholder:text-ink-secondary",
           "disabled:cursor-not-allowed disabled:bg-surface-disabled disabled:text-ink-disabled",
           error
@@ -44,11 +49,11 @@ export function Textarea({
         )}
         {...props}
       />
-      {error && (
-        <p id={errorId} className="text-2xs text-danger">
-          {error}
-        </p>
-      )}
+      <FieldError
+        id={errorId}
+        message={error}
+        reserveSpace={reserveErrorSpace}
+      />
     </div>
   );
 }
