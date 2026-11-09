@@ -63,7 +63,7 @@ export function LoginForm() {
       <div className="mt-[46px] flex flex-col gap-2">
         <TextField
           label="아이디"
-          placeholder="사번 또는 아이디를 입력하세요."
+          placeholder="아이디를 입력하세요."
           autoComplete="username"
           error={errors.id?.message}
           {...register("id")}

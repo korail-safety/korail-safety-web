@@ -6,7 +6,7 @@ import { apiClient } from "@/shared/api";
 
 export interface SignupRequest {
   name: string;
-  employeeNo: string;
+  adminCode: string;
   email: string;
   id: string;
   password: string;

@@ -64,7 +64,7 @@ export function UiPreviewPage() {
         <TextField
           className="w-72"
           label="아이디"
-          placeholder="사번 또는 아이디를 입력하세요."
+          placeholder="아이디를 입력하세요."
         />
         <TextField
           className="w-72"
