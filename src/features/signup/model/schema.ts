@@ -3,7 +3,8 @@ import { z } from "zod";
 export const signupSchema = z
   .object({
     name: z.string().trim().min(1, "이름을 입력해 주세요."),
-    employeeNo: z.string().trim().min(1, "사번을 입력해 주세요."),
+    /** 관리자가 발급한 가입 코드. 코드 검증은 서버에서 한다. */
+    adminCode: z.string().trim().min(1, "관리자 코드를 입력해 주세요."),
     email: z
       .string()
       .trim()

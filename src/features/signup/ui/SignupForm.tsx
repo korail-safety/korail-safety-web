@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { getApiErrorCode } from "@/shared/api";
 import { ROUTES } from "@/shared/config";
 import {
   Button,
@@ -20,6 +21,7 @@ import {
   useSendEmailCode,
   useSignup,
 } from "../api/signup";
+import { SIGNUP_ERROR_CODE } from "../api/errorCodes";
 import { signupSchema, type SignupFormValues } from "../model/schema";
 
 export function SignupForm() {
@@ -30,6 +32,8 @@ export function SignupForm() {
 
   // 중복 확인을 통과한 아이디. 입력값이 바뀌면 다시 확인해야 한다.
   const [checkedId, setCheckedId] = useState<string | null>(null);
+  // 특정 필드에 표시할 수 없는 가입 실패 메시지
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -44,7 +48,7 @@ export function SignupForm() {
     resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
-      employeeNo: "",
+      adminCode: "",
       email: "",
       id: "",
       password: "",
@@ -90,7 +94,7 @@ export function SignupForm() {
 
   const onSubmit = ({
     name,
-    employeeNo,
+    adminCode,
     email,
     id,
     password,
@@ -100,9 +104,30 @@ export function SignupForm() {
       return;
     }
 
+    setSubmitError(null);
     signup.mutate(
-      { name, employeeNo, email, id, password },
-      { onSuccess: () => router.push(ROUTES.login) },
+      { name, adminCode, email, id, password },
+      {
+        onSuccess: () => router.push(ROUTES.login),
+        onError: (error) => {
+          const code = getApiErrorCode(error);
+          if (code === SIGNUP_ERROR_CODE.invalidAdminCode) {
+            setError("adminCode", {
+              message: "유효하지 않은 관리자 코드입니다.",
+            });
+            return;
+          }
+          if (code === SIGNUP_ERROR_CODE.idDuplicated) {
+            // 중복 확인 이후 다른 사람이 먼저 가입한 경우
+            setCheckedId(null);
+            setError("id", { message: "중복된 아이디입니다." });
+            return;
+          }
+          setSubmitError(
+            "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+          );
+        },
+      },
     );
   };
 
@@ -133,10 +158,11 @@ export function SignupForm() {
             {...register("name")}
           />
           <TextField
-            label="사번 *"
-            placeholder="사번을 입력하세요."
-            error={errors.employeeNo?.message}
-            {...register("employeeNo")}
+            label="관리자 코드 *"
+            placeholder="관리자에게 받은 코드를 입력하세요."
+            autoComplete="off"
+            error={errors.adminCode?.message}
+            {...register("adminCode")}
           />
         </div>
 
@@ -212,8 +238,7 @@ export function SignupForm() {
 
       {/* 메시지 자리를 미리 확보해 에러 시 레이아웃이 밀리지 않게 한다 */}
       <p role="alert" className="mt-4 h-[18px] text-xs text-danger">
-        {signup.isError &&
-          "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요."}
+        {submitError}
       </p>
     </form>
   );
