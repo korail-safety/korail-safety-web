@@ -1,26 +1,43 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * 디자인 토큰 — Figma "0 · Design Guide" / "0 · Main Components" 기준
+ * 색상·폰트·radius는 여기서만 정의하고, 컴포넌트에서는 토큰 클래스만 사용한다.
+ */
+@theme {
+  /* Brand */
+  --color-primary: #2878c8; /* Action Blue */
+  --color-navy: #17365d; /* Primary Navy */
+  --color-canvas: #e0e6ed; /* Canvas — 배경·테두리 */
+  --color-danger: #be4242; /* Warning */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Text */
+  --color-ink: #202d3e; /* 기본 텍스트 */
+  --color-ink-secondary: #687688; /* 보조 텍스트·placeholder */
+  --color-ink-tertiary: #5b6675; /* 검색 placeholder 등 */
+  --color-ink-disabled: #8c96a3;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Surface */
+  --color-surface-disabled: #f0f3f6;
+
+  /* Feedback (Alert) */
+  --color-info-bg: #e8f1fa;
+  --color-caution: #cf8b22;
+  --color-caution-bg: #faf4e6;
+  --color-caution-border: #ebd7ab;
+  --color-danger-bg: #fff2f2;
+  --color-danger-border: #f0d1d1;
+
+  /* Shape — 입력/버튼 8px, 카드 12px */
+  --radius-control: 8px;
+  --radius-card: 12px;
+
+  /* Typography — 본문 14 / 보조 10~12 / 보조 제목 18 / 화면 제목 24~30 */
+  --font-sans: var(--font-noto-sans-kr), system-ui, sans-serif;
+  --text-2xs: 10px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: var(--color-ink);
 }
