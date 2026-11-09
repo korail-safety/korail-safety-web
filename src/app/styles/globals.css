@@ -18,7 +18,9 @@
   --color-ink-disabled: #8c96a3;
 
   /* Surface */
+  --color-page: #f4f6f9; /* 업무 화면 배경 */
   --color-surface-disabled: #f0f3f6;
+  --color-on-navy-muted: #d6e3f2; /* navy 위 보조 텍스트 */
 
   /* Feedback (Alert) */
   --color-info-bg: #e8f1fa;
