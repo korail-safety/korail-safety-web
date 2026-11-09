@@ -56,7 +56,7 @@ export function Select<T extends string>({
         aria-controls={listId}
         aria-label={ariaLabel}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex h-9 w-full items-center justify-between rounded-control border border-canvas bg-white p-2.5 text-xs text-ink"
+        className="flex h-9 w-full cursor-pointer items-center justify-between rounded-control border border-canvas bg-white p-2.5 text-xs text-ink transition-colors hover:border-ink-disabled"
       >
         <span>{selected?.label}</span>
         <ChevronDownIcon
@@ -64,39 +64,43 @@ export function Select<T extends string>({
         />
       </button>
 
-      {open && (
-        <ul
-          id={listId}
-          role="listbox"
-          className="absolute top-[calc(100%+2px)] left-0 z-10 w-full overflow-hidden rounded-control border border-canvas bg-white"
-        >
-          {options.map((option) => {
-            const isSelected = option.value === value;
-            return (
-              <li key={option.value} role="option" aria-selected={isSelected}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(option.value);
-                    setOpen(false);
-                  }}
-                  className="flex w-full items-center justify-between p-2.5 text-xs text-ink hover:bg-surface-disabled"
-                >
-                  {option.label}
-                  {isSelected && (
-                    <span
-                      aria-hidden="true"
-                      className="text-sm font-bold text-ink-secondary"
-                    >
-                      ✓
-                    </span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <ul
+        id={listId}
+        role="listbox"
+        className={cn(
+          "absolute top-[calc(100%+2px)] left-0 z-10 w-full overflow-hidden rounded-control border border-canvas bg-white",
+          "transition-[opacity,translate,visibility]",
+          open
+            ? "visible translate-y-0 opacity-100"
+            : "invisible -translate-y-1 opacity-0",
+        )}
+      >
+        {options.map((option) => {
+          const isSelected = option.value === value;
+          return (
+            <li key={option.value} role="option" aria-selected={isSelected}>
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setOpen(false);
+                }}
+                className="flex w-full cursor-pointer items-center justify-between p-2.5 text-xs text-ink transition-colors hover:bg-surface-disabled"
+              >
+                {option.label}
+                {isSelected && (
+                  <span
+                    aria-hidden="true"
+                    className="text-sm font-bold text-ink-secondary"
+                  >
+                    ✓
+                  </span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

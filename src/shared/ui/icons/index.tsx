@@ -49,3 +49,24 @@ export function SearchIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function ChevronLeftIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="10"
+      height="18"
+      viewBox="0 0 10 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M8.5 1.5L1.5 9L8.5 16.5"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

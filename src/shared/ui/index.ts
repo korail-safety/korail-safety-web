@@ -1,6 +1,7 @@
 export * from "./alert";
 export * from "./button";
 export * from "./checkbox";
+export * from "./field-error";
 export * from "./icons";
 export * from "./search-input";
 export * from "./select";
