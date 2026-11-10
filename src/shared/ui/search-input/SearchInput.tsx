@@ -25,7 +25,7 @@ export function SearchInput({
   return (
     <div
       className={cn(
-        "flex h-9 w-[300px] items-center gap-[15px] rounded-control border border-canvas bg-white px-[15px]",
+        "flex h-10 w-[300px] items-center gap-[15px] rounded-control border border-canvas bg-white px-[15px]",
         "transition-[border-color,box-shadow] focus-within:border-primary focus-within:ring-1 focus-within:ring-primary",
         className,
       )}
