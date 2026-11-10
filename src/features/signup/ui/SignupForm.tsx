@@ -135,7 +135,7 @@ export function SignupForm() {
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className="flex w-full max-w-[560px] flex-col"
+      className="flex w-full flex-col"
     >
       <div className="flex items-center gap-3">
         <Link
@@ -145,11 +145,11 @@ export function SignupForm() {
         >
           <ChevronLeftIcon />
         </Link>
-        <h2 className="text-3xl font-bold text-ink">회원가입</h2>
+        <h2 className="text-2xl font-bold text-ink sm:text-3xl">회원가입</h2>
       </div>
 
       <div className="mt-[30px] flex flex-col gap-2">
-        <div className="grid grid-cols-2 gap-[15px]">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-[15px]">
           <TextField
             label="이름 *"
             placeholder="이름을 입력하세요."
@@ -201,7 +201,7 @@ export function SignupForm() {
           }
         />
 
-        <div className="grid grid-cols-2 gap-[15px]">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-[15px]">
           <TextField
             type="password"
             label="비밀번호 *"
