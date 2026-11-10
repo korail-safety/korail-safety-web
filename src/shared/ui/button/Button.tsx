@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 
 import { cn } from "@/shared/lib";
 
@@ -43,7 +43,9 @@ export function buttonClassName({
 }
 
 export interface ButtonProps
-  extends ButtonHTMLAttributes<HTMLButtonElement>, ButtonStyleOptions {}
+  extends ButtonHTMLAttributes<HTMLButtonElement>, ButtonStyleOptions {
+  ref?: Ref<HTMLButtonElement>;
+}
 
 export function Button({
   variant,

@@ -70,3 +70,143 @@ export function ChevronLeftIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function ArrowUpIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="12"
+      height="16"
+      viewBox="0 0 12 16"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M6 15V1M6 1L1 6M6 1L11 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function CheckIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="12"
+      height="10"
+      viewBox="0 0 12 10"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M1 5.2L4.3 8.5L11 1.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function DocumentIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="20"
+      height="24"
+      viewBox="0 0 20 24"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M12 1H4a3 3 0 0 0-3 3v16a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8l-7-7Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 1v7h7M6 13h8M6 17h5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function FilmIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="24"
+      height="20"
+      viewBox="0 0 24 20"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <rect
+        x="1"
+        y="1"
+        width="22"
+        height="18"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M9.5 6.5v7l6-3.5-6-3.5Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function PencilIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M9.5 1.5l3 3L4.5 12.5H1.5v-3l8-8Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TrashIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M1.5 3.5h11M5 3.5V2h4v1.5M3 3.5l.7 9h6.6l.7-9M5.8 6v4.5M8.2 6v4.5"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

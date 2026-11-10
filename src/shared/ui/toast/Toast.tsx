@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/shared/lib";
 
@@ -17,6 +17,8 @@ export interface ToastProps {
   message: string;
   /** 닫기 버튼을 누르면 사라지는 애니메이션이 끝난 뒤 호출된다. */
   onClose?: () => void;
+  /** 지정하면 이 시간(ms) 뒤 자동으로 닫힌다 */
+  duration?: number;
   className?: string;
 }
 
@@ -24,9 +26,16 @@ export function Toast({
   variant = "success",
   message,
   onClose,
+  duration,
   className,
 }: ToastProps) {
   const [leaving, setLeaving] = useState(false);
+
+  useEffect(() => {
+    if (!duration) return;
+    const timer = setTimeout(() => setLeaving(true), duration);
+    return () => clearTimeout(timer);
+  }, [duration]);
   const style = variantStyle[variant];
 
   return (
@@ -45,7 +54,7 @@ export function Toast({
       <span aria-hidden="true" className="shrink-0 text-base font-bold">
         {style.icon}
       </span>
-      <p className="min-w-0 flex-1 truncate text-xs">{message}</p>
+      <p className="min-w-0 flex-1 truncate text-[13px]">{message}</p>
       {onClose && (
         <button
           type="button"

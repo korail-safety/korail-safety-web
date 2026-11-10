@@ -8,6 +8,7 @@
   /* Brand */
   --color-primary: #2878c8; /* Action Blue */
   --color-primary-hover: #2269ad;
+  --color-primary-subtle: #f6f9fd; /* 업로드 영역 배경 */
   --color-navy: #17365d; /* Primary Navy */
   --color-canvas: #e0e6ed; /* Canvas — 배경·테두리 */
   --color-danger: #be4242; /* Warning */
@@ -23,6 +24,8 @@
   --color-page: #f4f6f9; /* 업무 화면 배경 */
   --color-surface-disabled: #f0f3f6;
   --color-on-navy-muted: #d6e3f2; /* navy 위 보조 텍스트 */
+  --color-on-navy-subtle: #c7d9f0; /* 사이드바 부제 */
+  --color-navy-divider: #455e7d; /* 사이드바 구분선 */
 
   /* Feedback (Alert) */
   --color-info-bg: #e8f1fa;
@@ -31,6 +34,10 @@
   --color-caution-border: #ebd7ab;
   --color-danger-bg: #fff2f2;
   --color-danger-border: #f0d1d1;
+  --color-success: #238b64;
+  --color-success-bg: #e5f1ec;
+  --color-highlight: #f8efc8; /* 원문 강조 */
+  --color-player: #282f3b; /* 영상 플레이어 배경 */
 
   /* Shape — 입력/버튼 8px, 카드 12px */
   --radius-control: 8px;
@@ -46,11 +53,29 @@
 
   --animate-fade-in: fade-in 200ms cubic-bezier(0, 0, 0.2, 1) both;
   --animate-fade-out: fade-out 150ms cubic-bezier(0.4, 0, 1, 1) both;
+  --animate-pop-in: pop-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
 
   @keyframes fade-in {
     from {
       opacity: 0;
       transform: translateY(4px);
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+  }
+
+  @keyframes shimmer {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(250%);
     }
   }
 

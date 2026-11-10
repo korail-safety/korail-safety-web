@@ -4,8 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
+import { meQueryKey } from "@/entities/session";
 import { ROUTES } from "@/shared/config";
 import { Button, Checkbox, TextField } from "@/shared/ui";
 
@@ -15,6 +17,7 @@ import { loginSchema, type LoginFormValues } from "../model/schema";
 
 export function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { mutate: login, isPending, isError } = useLogin();
 
   const {
@@ -39,8 +42,10 @@ export function LoginForm() {
       {
         onSuccess: () => {
           setRememberedId(rememberId ? id : null);
+          // 이전 사용자 정보가 남지 않도록 다시 불러오게 한다
+          queryClient.removeQueries({ queryKey: meQueryKey });
           // TODO: 토큰 저장 방식 확정 후 처리
-          router.push(ROUTES.dashboard);
+          router.push(ROUTES.videoCreate);
         },
       },
     );
@@ -50,12 +55,12 @@ export function LoginForm() {
     <form
       noValidate
       onSubmit={handleSubmit(onSubmit)}
-      className="flex w-full max-w-[560px] flex-col"
+      className="flex w-full flex-col"
     >
       <p className="text-sm font-semibold text-primary">
         철도 안전교육 콘텐츠 제작 자동화 시스템
       </p>
-      <h2 className="mt-4 text-3xl font-bold text-ink">로그인</h2>
+      <h2 className="mt-4 text-2xl font-bold text-ink sm:text-3xl">로그인</h2>
       <p className="mt-1 text-sm text-ink-secondary">
         업무 계정으로 로그인해 주세요.
       </p>
@@ -85,7 +90,7 @@ export function LoginForm() {
       <Button
         type="submit"
         disabled={isPending}
-        className="mt-[21px] self-start"
+        className="mt-[21px] w-full sm:w-auto sm:self-start"
       >
         {isPending ? "로그인 중..." : "로그인"}
       </Button>

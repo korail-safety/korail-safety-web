@@ -56,7 +56,7 @@ export function Select<T extends string>({
         aria-controls={listId}
         aria-label={ariaLabel}
         onClick={() => setOpen((prev) => !prev)}
-        className="flex h-9 w-full cursor-pointer items-center justify-between rounded-control border border-canvas bg-white p-2.5 text-xs text-ink transition-colors hover:border-ink-disabled"
+        className="flex h-10 w-full cursor-pointer items-center justify-between rounded-control border border-canvas bg-white p-2.5 text-xs text-ink transition-colors hover:border-ink-disabled"
       >
         <span>{selected?.label}</span>
         <ChevronDownIcon
