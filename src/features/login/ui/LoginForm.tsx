@@ -83,14 +83,14 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="mt-1 flex items-center justify-between">
+      <div className="mt-2 flex items-center justify-between">
         <Checkbox label="아이디 저장" {...register("rememberId")} />
       </div>
 
       <Button
         type="submit"
         disabled={isPending}
-        className="mt-[21px] w-full sm:w-auto sm:self-start"
+        className="mt-[10px] w-full sm:w-auto sm:self-start"
       >
         {isPending ? "로그인 중..." : "로그인"}
       </Button>

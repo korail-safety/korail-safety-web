@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { getApiErrorCode } from "@/shared/api";
 import type { DropzoneError } from "@/shared/ui";
 
 import { UPLOAD_ERROR_CODE } from "../api/errorCodes";
-import { uploadReport } from "../api/uploadReport";
+import { replaceReport, uploadReport } from "../api/uploadReport";
 import { isAcceptedFile } from "./fileRules";
 
 type UploadState =
@@ -30,6 +30,8 @@ export function useReportUpload() {
   const [state, setState] = useState<UploadState>({ status: "idle" });
   // 업로드 영역에 표시할 에러 (파일 자체가 잘못된 경우)
   const [zoneError, setZoneError] = useState<DropzoneError | null>(null);
+  // 이미 만든 영상 작업. 파일을 바꾸면 새로 만들지 않고 이 작업의 보고서만 교체한다
+  const videoIdRef = useRef<string | null>(null);
 
   const selectFile = async (file: File) => {
     if (!isAcceptedFile(file)) {
@@ -42,13 +44,16 @@ export function useReportUpload() {
     setState({ status: "uploading", file, progress: 0 });
 
     try {
-      const { videoId } = await uploadReport(file, (progress) =>
+      const onProgress = (progress: number) =>
         setState((prev) =>
           prev.status === "uploading" && prev.file === file
             ? { ...prev, progress }
             : prev,
-        ),
-      );
+        );
+      const { videoId } = videoIdRef.current
+        ? await replaceOrUpload(videoIdRef.current, file, onProgress)
+        : await uploadReport(file, onProgress);
+      videoIdRef.current = videoId;
       setState({ status: "success", file, videoId });
     } catch (error) {
       const code = getApiErrorCode(error);
@@ -71,4 +76,20 @@ export function useReportUpload() {
   };
 
   return { state, zoneError, selectFile };
+}
+
+/** 교체할 작업이 이미 정리됐으면(404) 새로 업로드한다 */
+async function replaceOrUpload(
+  videoId: string,
+  file: File,
+  onProgress: (percent: number) => void,
+) {
+  try {
+    return await replaceReport(videoId, file, onProgress);
+  } catch (error) {
+    if (getApiErrorCode(error) === "VIDEO_NOT_FOUND") {
+      return uploadReport(file, onProgress);
+    }
+    throw error;
+  }
 }

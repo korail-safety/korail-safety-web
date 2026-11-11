@@ -81,6 +81,7 @@ export function VideoAnalysisPage({ videoId }: VideoAnalysisPageProps) {
             steps={ANALYSIS_JOB_STEPS}
             currentStep={data?.step}
             estimatedMinutes={data?.estimatedMinutes}
+            progress={data?.progress}
             completed={status === "COMPLETED"}
           />
         )}

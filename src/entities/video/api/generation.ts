@@ -10,6 +10,8 @@ export interface GenerationStatusResponse {
   status: GenerationStatus;
   step: GenerationStep;
   estimatedMinutes?: number;
+  /** 진행률 0~100. 서버가 셀 수 있을 때만 */
+  progress?: number;
   errorCode?: string;
 }
 

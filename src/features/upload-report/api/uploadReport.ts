@@ -7,23 +7,44 @@ export interface UploadReportResponse {
   videoId: string;
 }
 
-export async function uploadReport(
-  file: File,
-  onProgress?: (percent: number) => void,
-) {
+type ProgressHandler = (percent: number) => void;
+
+function uploadConfig(onProgress?: ProgressHandler) {
+  return {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 0, // 큰 파일 업로드는 시간 제한 없음
+    onUploadProgress: (event: { loaded: number; total?: number }) => {
+      if (event.total) onProgress?.((event.loaded / event.total) * 100);
+    },
+  };
+}
+
+function toFormData(file: File) {
   const formData = new FormData();
   formData.append("file", file);
+  return formData;
+}
 
+/** 첫 업로드: 영상 작업을 새로 만든다 (stage = UPLOADED) */
+export async function uploadReport(file: File, onProgress?: ProgressHandler) {
   const { data } = await apiClient.post<UploadReportResponse>(
     "/videos/reports",
-    formData,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-      timeout: 0, // 큰 파일 업로드는 시간 제한 없음
-      onUploadProgress: (event) => {
-        if (event.total) onProgress?.((event.loaded / event.total) * 100);
-      },
-    },
+    toFormData(file),
+    uploadConfig(onProgress),
+  );
+  return data;
+}
+
+/** 파일 변경: 같은 영상 작업의 보고서만 바꾼다 (분석 시작 전에만 가능) */
+export async function replaceReport(
+  videoId: string,
+  file: File,
+  onProgress?: ProgressHandler,
+) {
+  const { data } = await apiClient.put<UploadReportResponse>(
+    `/videos/${videoId}/report`,
+    toFormData(file),
+    uploadConfig(onProgress),
   );
   return data;
 }
