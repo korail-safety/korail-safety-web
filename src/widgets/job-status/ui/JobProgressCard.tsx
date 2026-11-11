@@ -27,6 +27,8 @@ interface JobProgressCardProps {
   /** 지금 진행 중인 단계 key. 없으면 첫 단계로 본다. */
   currentStep?: string;
   estimatedMinutes?: number;
+  /** 서버가 주는 진행률(0~100). 없으면 단계 위치로 계산한다 */
+  progress?: number;
   /** 작업 완료 (다음 화면으로 넘어가기 직전) */
   completed?: boolean;
 }
@@ -59,6 +61,7 @@ export function JobProgressCard({
   steps,
   currentStep,
   estimatedMinutes,
+  progress: serverProgress,
   completed = false,
 }: JobProgressCardProps) {
   const elapsed = useElapsedSeconds(!completed);
@@ -69,8 +72,12 @@ export function JobProgressCard({
         0,
         steps.findIndex((step) => step.key === currentStep),
       );
-  // 지난 단계 + 지금 단계의 절반만큼 채운다
-  const progress = completed ? 100 : ((currentIndex + 0.5) / total) * 100;
+  // 서버 진행률이 있으면 그 값, 없으면 지난 단계 + 지금 단계의 절반만큼 채운다
+  const progress = completed
+    ? 100
+    : serverProgress !== undefined
+      ? Math.min(Math.max(serverProgress, 0), 100)
+      : ((currentIndex + 0.5) / total) * 100;
 
   return (
     <section

@@ -10,6 +10,8 @@ export const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  // 로그인 토큰은 서버가 httpOnly 쿠키로 내려준다. 요청마다 쿠키를 같이 보낸다
+  withCredentials: true,
   // 백엔드 없이 화면 확인용 (NEXT_PUBLIC_API_MOCK=true)
   ...(env.useMockApi && { adapter: mockAdapter }),
 });

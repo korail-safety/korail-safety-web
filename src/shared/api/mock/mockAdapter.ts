@@ -29,6 +29,7 @@ import {
  * - 보고서 업로드: 파일 이름에
  *     "encrypted" → 암호 파일 에러 / "upload-fail" → 업로드 실패
  *     "analysis-fail" → 업로드는 성공, 분석 단계에서 실패 (다시 시도하면 성공)
+ *   파일을 바꾸면 같은 작업의 보고서만 교체 (PUT /videos/{id}/report)
  * - 보고서 분석: 4초마다 다음 단계로 진행, 8초 뒤 완료
  * - 분석 결과 수정: 내용에 "fail" 이 들어가면 저장 실패
  * - 스토리보드: 5초 뒤 완성. 수정 프롬프트에 "fail" 이 들어가면 실패
@@ -40,7 +41,7 @@ import {
  *   "오류 발생" 카드는 /videos/storyboard-fail-draft/storyboard 로 이어짐 (실패 화면)
  * - 라이브러리: 영상 5개로 시작. 저장한 영상은 맨 앞에 추가됨
  *   이름에 "fail" 을 넣어 수정하면 실패. /library/not-found 는 없는 영상(404)
- * - 영상 생성: 4초마다 다음 단계, 12초 뒤 완료.
+ * - 영상 생성: 4초마다 다음 단계, 12초 뒤 완료. 장면 만들기 단계에서는 진행률(progress)도 내려줌
  *   /videos/generation-fail/generation 은 4초쯤 실패 (다시 시도하면 성공)
  */
 
@@ -75,6 +76,8 @@ function parseBody(config: InternalAxiosRequestConfig) {
 
 // 분석 시작 시각 (videoId → ms)
 const analysisStartedAt = new Map<string, number>();
+// 보고서를 "analysis-fail" 파일로 교체한 작업
+const analysisFailIds = new Set<string>();
 // 다시 시도한 작업 (재시도하면 성공하도록)
 const retriedVideoIds = new Set<string>();
 const STEP_MS = 4000;
@@ -87,7 +90,7 @@ function getAnalysisStatus(videoId: string) {
   const stepIndex = Math.min(Math.floor(elapsed / STEP_MS), STEPS.length);
 
   if (
-    videoId.startsWith("fail-") &&
+    (videoId.startsWith("fail-") || analysisFailIds.has(videoId)) &&
     !retriedVideoIds.has(videoId) &&
     stepIndex >= 1
   ) {
@@ -135,9 +138,14 @@ function getGenerationStatus(videoId: string) {
   if (stepIndex >= GENERATION_STEPS.length) {
     return { status: "COMPLETED", step: "MERGE_VIDEO" };
   }
+  // 장면 만들기는 장면 6개 중 몇 개 끝났는지로 진행률을 셀 수 있다고 가정
+  const scenesDone = Math.floor((elapsed / STEP_MS) * 6);
   return {
     status: "IN_PROGRESS",
     step: GENERATION_STEPS[stepIndex],
+    ...(stepIndex === 0 && {
+      progress: Math.round((scenesDone / 6) * (100 / GENERATION_STEPS.length)),
+    }),
     estimatedMinutes: Math.max(
       1,
       Math.ceil((GENERATION_STEPS.length * STEP_MS - elapsed) / 60000),
@@ -319,9 +327,6 @@ export const mockAdapter: AxiosAdapter = async (config) => {
   if (method === "GET" && url === "/auth/check-id") {
     return ok(config, { available: config.params?.id !== "admin" });
   }
-  if (method === "POST" && url === "/auth/email/send-code") {
-    return ok(config, null);
-  }
   if (method === "POST" && url === "/auth/signup") {
     const { adminCode, id } = parseBody(config);
     if (adminCode !== "KORAIL") return fail(config, 400, "INVALID_ADMIN_CODE");
@@ -340,6 +345,23 @@ export const mockAdapter: AxiosAdapter = async (config) => {
     mockId += 1;
     const prefix = name.includes("analysis-fail") ? "fail" : "mock";
     return ok(config, { videoId: `${prefix}-${mockId}` }, 201);
+  }
+
+  const reportMatch = url.match(/^\/videos\/([^/]+)\/report$/);
+  if (method === "PUT" && reportMatch) {
+    const videoId = reportMatch[1];
+    if (analysisStartedAt.has(videoId)) {
+      return fail(config, 409, "ANALYSIS_ALREADY_STARTED");
+    }
+    const file = (config.data as FormData).get("file") as File;
+    const name = file.name.toLowerCase();
+    if (name.includes("encrypted")) return fail(config, 400, "ENCRYPTED_FILE");
+    await simulateUpload(config, file);
+    if (name.includes("upload-fail"))
+      return fail(config, 500, "INTERNAL_ERROR");
+    if (name.includes("analysis-fail")) analysisFailIds.add(videoId);
+    else analysisFailIds.delete(videoId);
+    return ok(config, { videoId });
   }
 
   // 보고서 분석

@@ -12,6 +12,8 @@ export interface AnalysisStatusResponse {
   step: AnalysisStep;
   /** 예상 남은 시간(분). 모르면 생략 */
   estimatedMinutes?: number;
+  /** 진행률 0~100. 서버가 셀 수 있을 때만 */
+  progress?: number;
   /** 실패 시 사용자에게 보여줄 오류 코드 (예: "E-102") */
   errorCode?: string;
 }

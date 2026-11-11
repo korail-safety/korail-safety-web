@@ -34,11 +34,3 @@ async function checkIdDuplicate(id: string) {
 export function useCheckIdDuplicate() {
   return useMutation({ mutationFn: checkIdDuplicate });
 }
-
-async function sendEmailCode(email: string) {
-  await apiClient.post("/auth/email/send-code", { email });
-}
-
-export function useSendEmailCode() {
-  return useMutation({ mutationFn: sendEmailCode });
-}

@@ -16,11 +16,7 @@ import {
   TextField,
 } from "@/shared/ui";
 
-import {
-  useCheckIdDuplicate,
-  useSendEmailCode,
-  useSignup,
-} from "../api/signup";
+import { useCheckIdDuplicate, useSignup } from "../api/signup";
 import { SIGNUP_ERROR_CODE } from "../api/errorCodes";
 import { signupSchema, type SignupFormValues } from "../model/schema";
 
@@ -28,7 +24,6 @@ export function SignupForm() {
   const router = useRouter();
   const signup = useSignup();
   const checkId = useCheckIdDuplicate();
-  const sendEmailCode = useSendEmailCode();
 
   // 중복 확인을 통과한 아이디. 입력값이 바뀌면 다시 확인해야 한다.
   const [checkedId, setCheckedId] = useState<string | null>(null);
@@ -77,17 +72,6 @@ export function SignupForm() {
       onError: () =>
         setError("id", {
           message: "중복 확인에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        }),
-    });
-  };
-
-  const handleSendEmailCode = async () => {
-    if (!(await trigger("email"))) return;
-
-    sendEmailCode.mutate(getValues("email").trim(), {
-      onError: () =>
-        setError("email", {
-          message: "인증번호 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.",
         }),
     });
   };
@@ -173,15 +157,6 @@ export function SignupForm() {
           autoComplete="email"
           error={errors.email?.message}
           {...register("email")}
-          endAdornment={
-            <Button
-              size="xs"
-              onClick={handleSendEmailCode}
-              disabled={sendEmailCode.isPending}
-            >
-              {sendEmailCode.isSuccess ? "재전송" : "인증번호 받기"}
-            </Button>
-          }
         />
 
         <TextField
