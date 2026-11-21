@@ -6,7 +6,7 @@ import { useStartAnalysis } from "@/entities/video";
 import { ROUTES } from "@/shared/config";
 import { Button, Dropzone, FileItem } from "@/shared/ui";
 
-import { ACCEPT_ATTRIBUTE } from "../model/fileRules";
+import { ACCEPT_ATTRIBUTE, MAX_FILE_SIZE_MB } from "../model/fileRules";
 import { useReportUpload } from "../model/useReportUpload";
 
 export function ReportUploadSection() {
@@ -30,7 +30,7 @@ export function ReportUploadSection() {
         <Dropzone
           className="mt-4 lg:flex-1"
           accept={ACCEPT_ATTRIBUTE}
-          hint="PDF, DOCX · 파일 크기는 운영 정책에 따릅니다."
+          hint={`PDF 파일만 · 최대 ${MAX_FILE_SIZE_MB}MB`}
           error={zoneError}
           hasFile={state.status !== "idle"}
           disabled={state.status === "uploading"}
