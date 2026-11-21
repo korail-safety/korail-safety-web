@@ -7,9 +7,10 @@ export interface LoginRequest {
   password: string;
 }
 
-// TODO: 백엔드 API 명세 확정 후 엔드포인트·응답 타입 맞추기
+/** 토큰은 body가 아니라 httpOnly 쿠키(Set-Cookie)로 받는다 */
 export interface LoginResponse {
-  accessToken: string;
+  id: string;
+  name: string;
 }
 
 async function login(body: LoginRequest) {

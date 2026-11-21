@@ -2,4 +2,5 @@
 export const SIGNUP_ERROR_CODE = {
   invalidAdminCode: "INVALID_ADMIN_CODE",
   idDuplicated: "ID_DUPLICATED",
+  emailDuplicated: "EMAIL_DUPLICATED",
 } as const;
