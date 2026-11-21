@@ -210,3 +210,46 @@ export function TrashIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function EyeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M1.5 9S4.2 3.75 9 3.75 16.5 9 16.5 9 13.8 14.25 9 14.25 1.5 9 1.5 9Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="9" r="2.25" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+export function EyeOffIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        d="M7.4 3.9A6.9 6.9 0 0 1 9 3.75C13.8 3.75 16.5 9 16.5 9a12.6 12.6 0 0 1-1.95 2.6M10.6 10.65A2.25 2.25 0 0 1 7.35 7.4M12.9 12.95A7.4 7.4 0 0 1 9 14.25C4.2 14.25 1.5 9 1.5 9a12.9 12.9 0 0 1 3.6-3.95M1.5 1.5l15 15"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
