@@ -7,7 +7,11 @@ import type { DropzoneError } from "@/shared/ui";
 
 import { UPLOAD_ERROR_CODE } from "../api/errorCodes";
 import { replaceReport, uploadReport } from "../api/uploadReport";
-import { isAcceptedFile } from "./fileRules";
+import {
+  isAcceptedFile,
+  isWithinSizeLimit,
+  MAX_FILE_SIZE_MB,
+} from "./fileRules";
 
 type UploadState =
   | { status: "idle" }
@@ -17,12 +21,12 @@ type UploadState =
 
 const INVALID_FILE_ERROR: DropzoneError = {
   title: "파일을 업로드할 수 없습니다",
-  description: "파일 형식 또는 암호 설정을 확인해 주세요.",
+  description: "PDF 파일인지, 암호가 걸려 있지 않은지 확인해 주세요.",
 };
 
 const TOO_LARGE_ERROR: DropzoneError = {
   title: "파일을 업로드할 수 없습니다",
-  description: "파일 크기가 허용 범위를 넘었습니다.",
+  description: `파일은 ${MAX_FILE_SIZE_MB}MB까지 올릴 수 있습니다.`,
 };
 
 /** 보고서 파일 1개의 선택 → 업로드 → 결과 상태를 관리한다. */
@@ -37,6 +41,11 @@ export function useReportUpload() {
     if (!isAcceptedFile(file)) {
       setState({ status: "idle" });
       setZoneError(INVALID_FILE_ERROR);
+      return;
+    }
+    if (!isWithinSizeLimit(file)) {
+      setState({ status: "idle" });
+      setZoneError(TOO_LARGE_ERROR);
       return;
     }
 

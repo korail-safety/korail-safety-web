@@ -13,9 +13,9 @@ export interface DropzoneError {
 }
 
 export interface DropzoneProps {
-  /** input accept 값. 예: ".pdf,.docx" */
+  /** input accept 값. 예: ".pdf" */
   accept?: string;
-  /** 안내 문구. 예: "PDF, DOCX · 파일 크기는 운영 정책에 따릅니다." */
+  /** 안내 문구. 예: "PDF 파일만 · 최대 20MB" */
   hint?: string;
   error?: DropzoneError | null;
   /** 이미 파일을 선택했으면 버튼 문구가 "파일 변경"으로 바뀐다 */

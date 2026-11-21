@@ -13,6 +13,7 @@ import {
   Checkbox,
   ChevronLeftIcon,
   FieldError,
+  PasswordField,
   TextField,
 } from "@/shared/ui";
 
@@ -107,6 +108,10 @@ export function SignupForm() {
             setError("id", { message: "중복된 아이디입니다." });
             return;
           }
+          if (code === SIGNUP_ERROR_CODE.emailDuplicated) {
+            setError("email", { message: "이미 가입된 이메일입니다." });
+            return;
+          }
           setSubmitError(
             "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
           );
@@ -177,16 +182,14 @@ export function SignupForm() {
         />
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-[15px]">
-          <TextField
-            type="password"
+          <PasswordField
             label="비밀번호 *"
             placeholder="비밀번호를 입력하세요. 8자 이상"
             autoComplete="new-password"
             error={errors.password?.message}
             {...register("password")}
           />
-          <TextField
-            type="password"
+          <PasswordField
             label="비밀번호 확인 *"
             placeholder="비밀번호를 한 번 더 입력하세요."
             autoComplete="new-password"

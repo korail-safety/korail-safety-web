@@ -314,7 +314,7 @@ export const mockAdapter: AxiosAdapter = async (config) => {
     const { password } = parseBody(config);
     if (password === "wrong") return fail(config, 401, "INVALID_CREDENTIALS");
     setLoggedOut(false);
-    return ok(config, { accessToken: "mock-token" });
+    return ok(config, { id: "korail_2026", name: "홍길동" });
   }
   if (method === "POST" && url === "/auth/logout") {
     setLoggedOut(true);

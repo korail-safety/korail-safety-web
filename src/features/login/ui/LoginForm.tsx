@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 
 import { meQueryKey } from "@/entities/session";
 import { ROUTES } from "@/shared/config";
-import { Button, Checkbox, TextField } from "@/shared/ui";
+import { Button, Checkbox, PasswordField, TextField } from "@/shared/ui";
 
 import { useLogin } from "../api/login";
 import { getRememberedId, setRememberedId } from "../model/rememberedId";
@@ -73,9 +73,8 @@ export function LoginForm() {
           error={errors.id?.message}
           {...register("id")}
         />
-        <TextField
+        <PasswordField
           label="비밀번호"
-          type="password"
           placeholder="비밀번호를 입력하세요."
           autoComplete="current-password"
           error={errors.password?.message}
