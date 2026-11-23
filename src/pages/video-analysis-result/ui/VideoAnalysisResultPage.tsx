@@ -59,27 +59,29 @@ export function VideoAnalysisResultPage({
     setToast({ id: Date.now(), variant, message });
 
   const items = data?.items ?? [];
-  const selected = items.find((item) => item.key === selectedKey) ?? items[0];
+  const selected =
+    items.find((item) => item.fieldKey === selectedKey) ?? items[0];
   const currentPage = page ?? selected?.sourcePage ?? 1;
   const highlight =
     selected && selected.sourcePage === currentPage
-      ? selected.sourceText
+      ? (selected.sourceText ?? undefined)
       : undefined;
 
   // 수정 중인데 저장하지 않은 변경이 있는지
   const originalContent = items.find(
-    (item) => item.key === editingKey,
+    (item) => item.fieldKey === editingKey,
   )?.content;
   const dirty = editingKey !== null && draft.trim() !== originalContent;
   const leaveGuard = useUnsavedChangesGuard(dirty);
 
   const showSource = (item: ExtractedItem) => {
-    setSelectedKey(item.key);
-    setPage(item.sourcePage);
+    setSelectedKey(item.fieldKey);
+    // 근거 페이지가 없으면 보고 있던 페이지를 그대로 둔다
+    if (item.sourcePage !== null) setPage(item.sourcePage);
   };
 
   const startEdit = (key: ExtractedFieldKey) => {
-    const item = items.find((i) => i.key === key);
+    const item = items.find((i) => i.fieldKey === key);
     if (!item) return;
     showSource(item);
     setEditingKey(key);
@@ -195,6 +197,7 @@ export function VideoAnalysisResultPage({
                       if (fieldError) setFieldError(undefined);
                     }}
                     onSave={() => saveEdit("list")}
+                    onBack={() => leaveGuard.guard(cancelEdit)}
                   />
                 ) : (
                   <>
@@ -202,7 +205,7 @@ export function VideoAnalysisResultPage({
                     <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
                       <ExtractedInfoList
                         items={items}
-                        selectedKey={selected?.key}
+                        selectedKey={selected?.fieldKey}
                         onShowSource={showSource}
                         onEdit={startEdit}
                       />
