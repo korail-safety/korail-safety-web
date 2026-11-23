@@ -4,15 +4,21 @@ import { apiClient } from "@/shared/api";
 
 import type { ExtractedFieldKey } from "../model/enums";
 
-// TODO: 백엔드 API 명세 확정 후 엔드포인트·응답 타입 맞추기
-
 export interface ExtractedItem {
-  key: ExtractedFieldKey;
+  fieldKey: ExtractedFieldKey;
+  /** 지금 보여주는 내용 (사용자가 고쳤으면 고친 내용) */
   content: string;
-  /** 근거가 된 원문 페이지 (1부터) */
-  sourcePage: number;
-  /** 원문에서 강조할 근거 문장 */
-  sourceText: string;
+  /** AI가 처음 뽑은 내용 */
+  aiContent: string;
+  /** 근거가 된 원문 페이지 (1부터). 근거를 못 찾았으면 null */
+  sourcePage: number | null;
+  /**
+   * AI가 근거라고 알려준 문장. 원문에서 잘라온 게 아니라 AI가 옮겨 적은 것이라
+   * 원문과 띄어쓰기·표현이 조금 다를 수 있다. 근거를 못 찾았으면 null
+   */
+  sourceText: string | null;
+  /** 사용자가 마지막으로 고친 시각 (ISO). 안 고쳤으면 null */
+  editedAt: string | null;
 }
 
 export interface AnalysisResultResponse {
@@ -21,8 +27,8 @@ export interface AnalysisResultResponse {
 }
 
 export interface ReportPageResponse {
-  page: number;
-  totalPages: number;
+  pageNo: number;
+  /** 페이지에서 뽑은 글자. 스캔본처럼 글자를 뽑을 수 없으면 빈 문자열 */
   text: string;
 }
 

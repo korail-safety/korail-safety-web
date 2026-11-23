@@ -32,7 +32,7 @@ export function useUpdateExtractedField(videoId: string) {
           prev && {
             ...prev,
             items: prev.items.map((item) =>
-              item.key === updated.key ? updated : item,
+              item.fieldKey === updated.fieldKey ? updated : item,
             ),
           },
       );

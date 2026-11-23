@@ -40,7 +40,7 @@ export function Textarea({
         aria-invalid={!!error}
         aria-describedby={error ? errorId : undefined}
         className={cn(
-          "w-full resize-none rounded-control border bg-white px-4 py-[15px] text-xs leading-[1.5] text-ink outline-none transition-[color,background-color,border-color,box-shadow]",
+          "w-full resize-none rounded-control border bg-white px-4 py-[15px] text-sm leading-[1.5] text-ink outline-none transition-[color,background-color,border-color,box-shadow]",
           "placeholder:text-ink-secondary",
           "disabled:cursor-not-allowed disabled:bg-surface-disabled disabled:text-ink-disabled",
           error

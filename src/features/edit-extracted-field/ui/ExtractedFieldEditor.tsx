@@ -1,7 +1,7 @@
 "use client";
 
 import { EXTRACTED_FIELD, type ExtractedFieldKey } from "@/entities/video";
-import { Button, Textarea } from "@/shared/ui";
+import { Button, ChevronLeftIcon, Textarea } from "@/shared/ui";
 
 interface ExtractedFieldEditorProps {
   fieldKey: ExtractedFieldKey;
@@ -10,6 +10,8 @@ interface ExtractedFieldEditorProps {
   saving?: boolean;
   onChange: (value: string) => void;
   onSave: () => void;
+  /** 목록으로 돌아가기 */
+  onBack: () => void;
 }
 
 /** 추출 항목 1개를 고치는 편집 패널 */
@@ -20,12 +22,23 @@ export function ExtractedFieldEditor({
   saving,
   onChange,
   onSave,
+  onBack,
 }: ExtractedFieldEditorProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <h2 className="text-lg font-bold text-ink">
-        {EXTRACTED_FIELD[fieldKey]}
-      </h2>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="추출 정보 목록으로 돌아가기"
+          onClick={onBack}
+          className="-ml-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-ink transition-colors hover:bg-canvas"
+        >
+          <ChevronLeftIcon width={8} height={12} />
+        </button>
+        <h2 className="text-lg font-bold text-ink">
+          {EXTRACTED_FIELD[fieldKey]}
+        </h2>
+      </div>
       <Textarea
         className="mt-4"
         rows={10}

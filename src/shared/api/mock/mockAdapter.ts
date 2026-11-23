@@ -394,9 +394,10 @@ export const mockAdapter: AxiosAdapter = async (config) => {
     const { content } = parseBody(config);
     if (!content?.trim()) return fail(config, 400, "INVALID_INPUT");
     if (content.includes("fail")) return fail(config, 500, "INTERNAL_ERROR");
-    const item = mockExtractedItems.find((i) => i.key === itemMatch[1]);
+    const item = mockExtractedItems.find((i) => i.fieldKey === itemMatch[1]);
     if (!item) return fail(config, 404, "NOT_FOUND");
     item.content = content;
+    item.editedAt = new Date().toISOString();
     return ok(config, item);
   }
   const draftSaveMatch = url.match(/^\/videos\/([^/]+)\/draft$/);
