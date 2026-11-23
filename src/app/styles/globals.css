@@ -37,6 +37,7 @@
   --color-success: #238b64;
   --color-success-bg: #e5f1ec;
   --color-highlight: #f8efc8; /* 원문 강조 */
+  --color-highlight-mark: #fcd34d; /* 원문 이미지 위 강조 박스 */
   --color-player: #282f3b; /* 영상 플레이어 배경 */
 
   /* Shape — 입력/버튼 8px, 카드 12px */

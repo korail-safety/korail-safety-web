@@ -4,6 +4,17 @@ import { apiClient } from "@/shared/api";
 
 import type { ExtractedFieldKey } from "../model/enums";
 
+/**
+ * 근거 문장이 원문 페이지에서 차지하는 사각형.
+ * 페이지 크기에 대한 비율(0~1), 왼쪽 위가 (0, 0)이라 이미지 크기와 상관없이 위치가 맞는다.
+ */
+export interface SourceRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ExtractedItem {
   fieldKey: ExtractedFieldKey;
   /** 지금 보여주는 내용 (사용자가 고쳤으면 고친 내용) */
@@ -17,6 +28,11 @@ export interface ExtractedItem {
    * 원문과 띄어쓰기·표현이 조금 다를 수 있다. 근거를 못 찾았으면 null
    */
   sourceText: string | null;
+  /**
+   * 근거 문장의 위치 (한 줄에 사각형 1개). 원문에서 문장을 못 찾았거나
+   * 글자가 없는 페이지(스캔본 등)면 null
+   */
+  sourceRects: SourceRect[] | null;
   /** 사용자가 마지막으로 고친 시각 (ISO). 안 고쳤으면 null */
   editedAt: string | null;
 }
@@ -30,6 +46,8 @@ export interface ReportPageResponse {
   pageNo: number;
   /** 페이지에서 뽑은 글자. 스캔본처럼 글자를 뽑을 수 없으면 빈 문자열 */
   text: string;
+  /** 페이지 이미지 주소 (일정 시간 뒤 만료). 이미지가 없으면 null */
+  imageUrl: string | null;
 }
 
 export const analysisResultQueryKey = (videoId: string) =>
