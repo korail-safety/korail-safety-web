@@ -62,10 +62,14 @@ export function VideoAnalysisResultPage({
   const selected =
     items.find((item) => item.fieldKey === selectedKey) ?? items[0];
   const currentPage = page ?? selected?.sourcePage ?? 1;
-  const highlight =
-    selected && selected.sourcePage === currentPage
-      ? (selected.sourceText ?? undefined)
-      : undefined;
+  // 지금 보고 있는 페이지가 선택한 항목의 근거 페이지일 때만 강조한다
+  const onSourcePage = !!selected && selected.sourcePage === currentPage;
+  const highlight = onSourcePage
+    ? (selected.sourceText ?? undefined)
+    : undefined;
+  const highlightRects = onSourcePage
+    ? (selected.sourceRects ?? undefined)
+    : undefined;
 
   // 수정 중인데 저장하지 않은 변경이 있는지
   const originalContent = items.find(
@@ -148,7 +152,7 @@ export function VideoAnalysisResultPage({
         items={VIDEO_CREATION_STEPS}
         currentIndex={VIDEO_CREATION_STEP.analysis}
       />
-      <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-y-auto">
+      <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
         <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-5 pt-6 pb-8 sm:px-8 lg:px-[35px] lg:pt-[33px]">
           <h1 className="text-2xl font-bold text-ink sm:text-[28px]">
             분석 결과 확인
@@ -168,12 +172,12 @@ export function VideoAnalysisResultPage({
               </Button>
             </div>
           ) : !data ? (
-            <div className="mt-6 grid gap-6 lg:min-h-[440px] lg:flex-1 lg:grid-cols-2">
+            <div className="mt-6 grid gap-6 lg:min-h-[440px] lg:flex-1 lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)]">
               <div className={`${CARD} h-[420px] animate-pulse lg:h-auto`} />
               <div className={`${CARD} h-[420px] animate-pulse lg:h-auto`} />
             </div>
           ) : (
-            <div className="mt-6 grid gap-6 lg:min-h-[440px] lg:flex-1 lg:grid-cols-2">
+            <div className="mt-6 grid gap-6 lg:min-h-[440px] lg:flex-1 lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)]">
               <section className={CARD}>
                 <ReportViewer
                   videoId={videoId}
@@ -181,6 +185,7 @@ export function VideoAnalysisResultPage({
                   totalPages={data.totalPages}
                   onPageChange={setPage}
                   highlight={highlight}
+                  highlightRects={highlightRects}
                 />
               </section>
 
@@ -202,7 +207,7 @@ export function VideoAnalysisResultPage({
                 ) : (
                   <>
                     <h2 className="text-lg font-bold text-ink">AI 추출 정보</h2>
-                    <div className="mt-4 min-h-0 flex-1 overflow-y-auto">
+                    <div className="mt-4 min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
                       <ExtractedInfoList
                         items={items}
                         selectedKey={selected?.fieldKey}

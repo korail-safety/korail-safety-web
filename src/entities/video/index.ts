@@ -11,6 +11,7 @@ export {
   type AnalysisResultResponse,
   type ExtractedItem,
   type ReportPageResponse,
+  type SourceRect,
 } from "./api/analysisResult";
 export {
   generationQueryKey,
