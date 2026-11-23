@@ -29,7 +29,7 @@ export function VideoCompletePage({ videoId }: { videoId: string }) {
         items={VIDEO_CREATION_STEPS}
         currentIndex={VIDEO_CREATION_STEP.generate}
       />
-      <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-y-auto">
+      <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
         <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-5 pt-6 pb-8 sm:px-8 lg:px-[35px] lg:pt-[33px]">
           <h1 className="text-2xl font-bold text-ink sm:text-[28px]">
             영상이 성공적으로 제작되었습니다.

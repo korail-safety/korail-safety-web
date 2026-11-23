@@ -60,7 +60,7 @@ export function VideoGenerationPage({ videoId }: { videoId: string }) {
         items={VIDEO_CREATION_STEPS}
         currentIndex={VIDEO_CREATION_STEP.generate}
       />
-      <main className="flex flex-1 flex-col items-center px-5 py-10 sm:px-8 lg:min-h-0 lg:overflow-y-auto [&>*]:my-auto">
+      <main className="flex flex-1 flex-col items-center px-5 py-10 sm:px-8 lg:min-h-0 lg:overflow-y-auto lg:[scrollbar-gutter:stable] [&>*]:my-auto">
         {failed && !retry.isPending ? (
           <JobErrorCard
             title="영상을 생성하지 못했습니다."

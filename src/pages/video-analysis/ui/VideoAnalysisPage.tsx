@@ -62,7 +62,7 @@ export function VideoAnalysisPage({ videoId }: VideoAnalysisPageProps) {
         items={VIDEO_CREATION_STEPS}
         currentIndex={VIDEO_CREATION_STEP.analysis}
       />
-      <main className="flex flex-1 flex-col items-center px-5 py-10 sm:px-8 lg:min-h-0 lg:overflow-y-auto [&>*]:my-auto">
+      <main className="flex flex-1 flex-col items-center px-5 py-10 sm:px-8 lg:min-h-0 lg:overflow-y-auto lg:[scrollbar-gutter:stable] [&>*]:my-auto">
         {failed && !retry.isPending ? (
           <JobErrorCard
             title="보고서를 분석하지 못했습니다."
