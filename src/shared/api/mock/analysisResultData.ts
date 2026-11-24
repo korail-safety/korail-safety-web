@@ -1,10 +1,10 @@
 // 분석 결과 확인 화면용 가짜 데이터
-// - 사고 개요(p.3): 근거 좌표가 있음 → 이미지 위 박스 하이라이트
-// - 사고 원인(p.5): 근거가 두 줄에 걸침 → 박스 2개
-// - 조치 사항(p.8): AI가 표현을 바꿔서 좌표를 못 찾음 → "AI가 참고한 문장" 상자
+// - 사고 개요(p.3): 근거 좌표가 단어마다 끊겨서 옴 → 화면에서 줄 단위로 이어서 표시
+// - 사고 원인(p.5, p.8): 근거 2개. p.5는 박스 2줄, p.8은 좌표 없음 → "AI가 참고한 문장"
+// - 조치 사항(p.8): 예전 형식(근거 1개, sources 없음), 좌표 없음 → "AI가 참고한 문장" 상자
 // - 재발 방지 대책: 근거 없음(null) → "원문 근거 없음"
-// - 23페이지: 이미지 없음 → 텍스트 보기만
-// - 24페이지: 글자를 뽑을 수 없는 페이지(스캔본) → 이미지만
+// - 23페이지: 이미지 없음 → "원문 이미지를 불러올 수 없습니다"
+// - 24페이지: 글자를 뽑을 수 없는 페이지(스캔본) → 이미지는 보이고 하이라이트만 없음
 
 export const MOCK_TOTAL_PAGES = 24;
 
@@ -36,6 +36,17 @@ function lineWidth(line: string) {
   return Math.min(PAGE_W - LEFT * 2, [...line].length * FONT * 0.92);
 }
 
+/** 서버(pdfium)처럼 한 줄 사각형을 단어 조각 여러 개로 나눈다 (사이에 띄어쓰기 간격) */
+function splitIntoWords(rect: MockRect, count = 5): MockRect[] {
+  const gap = 0.006;
+  const width = (rect.width - gap * (count - 1)) / count;
+  return Array.from({ length: count }, (_, index) => ({
+    ...rect,
+    x: rect.x + index * (width + gap),
+    width,
+  }));
+}
+
 /** 서버가 내려줄 좌표와 같은 형식 (페이지 크기에 대한 비율, 왼쪽 위 기준) */
 function sentenceRects(page: number): MockRect[] {
   return (PAGE_SENTENCES[page] ?? []).map((line, index) => {
@@ -59,7 +70,14 @@ export const mockExtractedItems = [
     sourcePage: 3,
     sourceText:
       "○○역 구내 2번 선로에서 입환 중이던 열차가 정차 중인 화차와 접촉",
-    sourceRects: sentenceRects(3),
+    sourceRects: sentenceRects(3).flatMap((rect) => splitIntoWords(rect)),
+    sources: [
+      {
+        page: 3,
+        text: "○○역 구내 2번 선로에서 입환 중이던 열차가 정차 중인 화차와 접촉",
+        rects: sentenceRects(3).flatMap((rect) => splitIntoWords(rect)),
+      },
+    ],
     editedAt: null,
   },
   {
@@ -71,6 +89,18 @@ export const mockExtractedItems = [
     sourcePage: 5,
     sourceText: "입환 신호 확인 절차가 충분히 이루어지지 않았으며",
     sourceRects: sentenceRects(5),
+    sources: [
+      {
+        page: 5,
+        text: "입환 신호 확인 절차가 충분히 이루어지지 않았으며",
+        rects: sentenceRects(5),
+      },
+      {
+        page: 8,
+        text: "무선 교신 중 위치 정보가 정확히 전달되지 않았다",
+        rects: null,
+      },
+    ],
     editedAt: null,
   },
   {
@@ -102,6 +132,7 @@ export const mockExtractedItems = [
   sourcePage: number | null;
   sourceText: string | null;
   sourceRects: MockRect[] | null;
+  sources?: { page: number; text: string; rects: MockRect[] | null }[];
   editedAt: string | null;
 }[];
 

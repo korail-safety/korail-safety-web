@@ -11,37 +11,71 @@ interface ReportViewerProps {
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  /** 이 페이지에서 강조할 문장 (AI가 알려준 근거 문장) */
-  highlight?: string;
-  /** 강조할 문장의 위치. 있으면 페이지 이미지 위에 박스로 표시 */
+  /** 이 페이지의 근거 위치. 페이지 이미지 위에 박스로 표시 */
   highlightRects?: SourceRect[];
+  /** 이 페이지의 근거 문장들. 이미지 위에 항상 보여준다 */
+  highlightQuotes?: string[];
 }
 
-type ViewMode = "image" | "text";
+/**
+ * 서버는 단어(글자 조각)마다 사각형을 줘서 그대로 그리면 띄엄띄엄 칠해진다.
+ * 같은 줄에서 가까이 붙은 사각형은 하나로 이어서 형광펜처럼 보이게 한다.
+ */
+function mergeLineRects(rects: SourceRect[]): SourceRect[] {
+  const sorted = [...rects].sort((a, b) => a.y - b.y || a.x - b.x);
+  const merged: SourceRect[] = [];
+  for (const rect of sorted) {
+    const last = merged.find((m) => {
+      // 세로로 절반 이상 겹치면 같은 줄
+      const overlap =
+        Math.min(m.y + m.height, rect.y + rect.height) - Math.max(m.y, rect.y);
+      const sameLine = overlap > Math.min(m.height, rect.height) * 0.5;
+      // 띄어쓰기 정도의 간격이면 이어 붙인다
+      const gap = rect.x - (m.x + m.width);
+      return sameLine && gap < Math.max(m.height, rect.height) * 2;
+    });
+    if (!last) {
+      merged.push({ ...rect });
+      continue;
+    }
+    const right = Math.max(last.x + last.width, rect.x + rect.width);
+    const bottom = Math.max(last.y + last.height, rect.y + rect.height);
+    last.x = Math.min(last.x, rect.x);
+    last.y = Math.min(last.y, rect.y);
+    last.width = right - last.x;
+    last.height = bottom - last.y;
+  }
+  return merged;
+}
 
-/** 원문에서 근거 위치를 못 찾았을 때 AI가 참고한 문장만 따로 보여준다 */
-function SourceQuote({ text }: { text: string }) {
+/** AI가 참고한 근거 문장 (박스가 있든 없든 이미지 위에 항상 보여준다) */
+function SourceQuotes({ texts }: { texts: string[] }) {
   return (
-    <div className="mb-4 rounded-sm border-l-2 border-primary bg-white px-3 py-2 text-[13px] leading-relaxed whitespace-normal">
+    <div className="shrink-0 rounded-sm border-l-2 border-primary bg-[#F4F6F9] px-3 py-2 text-[13px] leading-relaxed">
       <p className="text-xs font-bold text-ink-secondary">AI가 참고한 문장</p>
-      <p className="mt-1 text-ink">“{text}”</p>
+      {texts.map((text, index) => (
+        <p key={index} className="mt-1 text-ink">
+          “{text}”
+        </p>
+      ))}
     </div>
   );
 }
 
-/** 페이지 이미지 + 근거 위치에 반투명 박스 */
+/** 페이지 이미지(가로에 맞춤) + 근거 위치에 반투명 박스 */
 function PageImage({
   src,
   pageNo,
   rects,
-  quote,
 }: {
   src: string;
   pageNo: number;
   rects?: SourceRect[];
-  quote?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const boxes = rects?.length ? mergeLineRects(rects) : [];
+  // 부모가 다시 그려질 때마다 새 배열이 와도, 위치가 같으면 다시 스크롤하지 않게
+  const rectsKey = JSON.stringify(rects ?? []);
   const firstRectRef = useRef<HTMLDivElement>(null);
 
   // 이미지가 다 그려진 뒤에 박스 위치로 스크롤 (그 전에는 높이가 0이라 위치가 틀림)
@@ -52,11 +86,11 @@ function PageImage({
         behavior: "smooth",
       });
     }
-  }, [loaded, rects]);
+  }, [loaded, rectsKey]);
 
   return (
-    <>
-      {!rects?.length && quote && <SourceQuote text={quote} />}
+    // 가로로 긴 페이지처럼 A4보다 짧으면 세로 가운데에 둔다
+    <div className="flex min-h-full flex-col justify-center gap-3">
       <div className="relative">
         {/* 서버가 주는 S3 임시 주소라 next/image 최적화 대상이 아님 */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -70,7 +104,7 @@ function PageImage({
           )}
         />
         {loaded &&
-          rects?.map((rect, index) => (
+          boxes.map((rect, index) => (
             <div
               key={index}
               ref={index === 0 ? firstRectRef : undefined}
@@ -85,69 +119,7 @@ function PageImage({
             />
           ))}
       </div>
-    </>
-  );
-}
-
-/**
- * 원문에서 강조 문장의 위치를 찾는다.
- * AI가 준 문장은 원문과 띄어쓰기·줄바꿈이 다를 수 있어서 공백은 무시하고 비교한다.
- */
-function findHighlight(text: string, highlight: string) {
-  const chars = [...highlight.replace(/\s+/g, "")];
-  if (chars.length === 0) return null;
-  const pattern = chars
-    .map((char) => char.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
-    .join("\\s*");
-  const match = new RegExp(pattern).exec(text);
-  return match
-    ? { start: match.index, end: match.index + match[0].length }
-    : null;
-}
-
-function HighlightedText({
-  text,
-  highlight,
-}: {
-  text: string;
-  highlight?: string;
-}) {
-  const markRef = useRef<HTMLElement>(null);
-  const range = highlight ? findHighlight(text, highlight) : null;
-
-  // 강조 문장이 보이도록 스크롤
-  useEffect(() => {
-    markRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
-  }, [text, highlight]);
-
-  if (!text.trim()) {
-    return (
-      <p className="text-ink-secondary">
-        텍스트를 추출할 수 없는 페이지입니다. (스캔한 문서 등)
-      </p>
-    );
-  }
-
-  if (!range) {
-    return (
-      <>
-        {highlight && <SourceQuote text={highlight} />}
-        {text}
-      </>
-    );
-  }
-
-  return (
-    <>
-      {text.slice(0, range.start)}
-      <mark
-        ref={markRef}
-        className="animate-fade-in rounded-sm bg-highlight px-0.5 text-ink"
-      >
-        {text.slice(range.start, range.end)}
-      </mark>
-      {text.slice(range.end)}
-    </>
+    </div>
   );
 }
 
@@ -157,49 +129,15 @@ export function ReportViewer({
   page,
   totalPages,
   onPageChange,
-  highlight,
   highlightRects,
+  highlightQuotes,
 }: ReportViewerProps) {
   const { data, isError, isFetching } = useReportPage(videoId, page);
-  // 기본은 이미지 보기. 페이지 이미지가 없으면(예전 데이터) 텍스트로만 보여준다
-  const [mode, setMode] = useState<ViewMode>("image");
-  const viewMode: ViewMode = data?.imageUrl ? mode : "text";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-ink">원문 보기</h2>
-          {data?.imageUrl && (
-            <div
-              role="group"
-              aria-label="원문 보기 방식"
-              className="flex rounded-control bg-canvas p-0.5 text-xs"
-            >
-              {(
-                [
-                  ["image", "원본"],
-                  ["text", "텍스트"],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={viewMode === value}
-                  onClick={() => setMode(value)}
-                  className={cn(
-                    "cursor-pointer rounded-[6px] px-2.5 py-1 transition-colors",
-                    viewMode === value
-                      ? "bg-white font-bold text-ink shadow-sm"
-                      : "text-ink-secondary hover:text-ink",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <h2 className="text-lg font-bold text-ink">원문 보기</h2>
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
@@ -227,27 +165,37 @@ export function ReportViewer({
         </div>
       </div>
 
+      {!!highlightQuotes?.length && (
+        // 원문(A4) 영역 밖에 둬서 인용이 있어도 페이지가 잘리거나 스크롤되지 않게
+        <div className="mt-4">
+          <SourceQuotes texts={highlightQuotes} />
+        </div>
+      )}
+
       <div
-        className={cn(
-          "mt-4 h-[480px] flex-1 overflow-y-auto rounded-control bg-canvas/70 text-[13px] leading-relaxed text-ink transition-opacity [scrollbar-gutter:stable] lg:h-auto lg:min-h-0",
-          viewMode === "image" ? "p-3" : "p-5 whitespace-pre-wrap",
-        )}
+        // 보고서는 대부분 A4(210×297)라 영역도 A4 비율로 두면 한 페이지가 딱 맞게 들어간다.
+        // A4보다 긴 페이지만 안에서 스크롤된다
+        className="mt-4 aspect-[210/297] w-full overflow-y-auto rounded-control bg-canvas/70 p-3 text-[13px] leading-relaxed text-ink transition-opacity"
         style={{ opacity: isFetching ? 0.6 : 1 }}
       >
         {isError ? (
-          <p className="text-danger">원문을 불러오지 못했습니다.</p>
-        ) : data && viewMode === "image" && data.imageUrl ? (
+          <p className="p-2 text-danger">원문을 불러오지 못했습니다.</p>
+        ) : data?.imageUrl ? (
           <PageImage
             key={data.imageUrl}
             src={data.imageUrl}
             pageNo={data.pageNo}
             rects={highlightRects}
-            quote={highlight}
           />
         ) : data ? (
-          <HighlightedText text={data.text} highlight={highlight} />
+          // 페이지 이미지를 만들지 못한 경우 (이미지 저장 기능 전에 분석한 작업 등)
+          <div className="flex flex-col gap-3">
+            <p className="p-2 text-ink-secondary">
+              원문 이미지를 불러올 수 없습니다.
+            </p>
+          </div>
         ) : (
-          <p className="text-ink-secondary">원문을 불러오는 중...</p>
+          <p className="p-2 text-ink-secondary">원문을 불러오는 중...</p>
         )}
       </div>
     </div>

@@ -6,10 +6,13 @@ export {
 } from "./api/analysis";
 export {
   analysisResultQueryKey,
+  getItemSources,
+  getSourcePages,
   useAnalysisResult,
   useReportPage,
   type AnalysisResultResponse,
   type ExtractedItem,
+  type ExtractedSource,
   type ReportPageResponse,
   type SourceRect,
 } from "./api/analysisResult";
