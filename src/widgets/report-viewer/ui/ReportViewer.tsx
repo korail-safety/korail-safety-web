@@ -48,16 +48,23 @@ function mergeLineRects(rects: SourceRect[]): SourceRect[] {
   return merged;
 }
 
-/** AI가 참고한 근거 문장 (박스가 있든 없든 이미지 위에 항상 보여준다) */
+/**
+ * AI가 참고한 근거 문장. 근거가 여러 개면 첫 문장만 보여주고 나머지는 개수만 표시한다
+ * (위치는 이미지 위 박스로 전부 칠해지므로 상자가 길어지지 않게)
+ */
 function SourceQuotes({ texts }: { texts: string[] }) {
+  const [first, ...rest] = texts;
   return (
     <div className="shrink-0 rounded-sm border-l-2 border-primary bg-[#F4F6F9] px-3 py-2 text-[13px] leading-relaxed">
       <p className="text-xs font-bold text-ink-secondary">AI가 참고한 문장</p>
-      {texts.map((text, index) => (
-        <p key={index} className="mt-1 text-ink">
-          “{text}”
-        </p>
-      ))}
+      <p className="mt-1 text-ink">
+        “{first}”
+        {rest.length > 0 && (
+          <span className="ml-1.5 text-xs whitespace-nowrap text-ink-secondary">
+            외 {rest.length}문장
+          </span>
+        )}
+      </p>
     </div>
   );
 }
