@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import {
   EXTRACTED_FIELD_ORDER,
+  getItemSources,
   useStartStoryboard,
   ExtractedInfoList,
   useAnalysisResult,
@@ -61,15 +62,17 @@ export function VideoAnalysisResultPage({
   const items = data?.items ?? [];
   const selected =
     items.find((item) => item.fieldKey === selectedKey) ?? items[0];
-  const currentPage = page ?? selected?.sourcePage ?? 1;
-  // 지금 보고 있는 페이지가 선택한 항목의 근거 페이지일 때만 강조한다
-  const onSourcePage = !!selected && selected.sourcePage === currentPage;
-  const highlight = onSourcePage
-    ? (selected.sourceText ?? undefined)
-    : undefined;
-  const highlightRects = onSourcePage
-    ? (selected.sourceRects ?? undefined)
-    : undefined;
+  const selectedSources = selected ? getItemSources(selected) : [];
+  const currentPage = page ?? selectedSources[0]?.page ?? 1;
+  // 선택한 항목의 근거 중 지금 보고 있는 페이지에 있는 것만 강조한다
+  const pageSources = selectedSources.filter(
+    (source) => source.page === currentPage,
+  );
+  const highlightRects = pageSources.flatMap((source) => source.rects ?? []);
+  // AI가 참고한 문장은 박스 표시 여부와 상관없이 항상 같이 보여준다
+  const highlightQuotes = pageSources
+    .filter((source) => source.text)
+    .map((source) => source.text);
 
   // 수정 중인데 저장하지 않은 변경이 있는지
   const originalContent = items.find(
@@ -78,10 +81,11 @@ export function VideoAnalysisResultPage({
   const dirty = editingKey !== null && draft.trim() !== originalContent;
   const leaveGuard = useUnsavedChangesGuard(dirty);
 
-  const showSource = (item: ExtractedItem) => {
+  /** page를 안 주면 첫 번째 근거 페이지로. 근거가 없으면 보고 있던 페이지 그대로 */
+  const showSource = (item: ExtractedItem, sourcePage?: number) => {
     setSelectedKey(item.fieldKey);
-    // 근거 페이지가 없으면 보고 있던 페이지를 그대로 둔다
-    if (item.sourcePage !== null) setPage(item.sourcePage);
+    const target = sourcePage ?? getItemSources(item)[0]?.page;
+    if (target !== undefined) setPage(target);
   };
 
   const startEdit = (key: ExtractedFieldKey) => {
@@ -177,19 +181,20 @@ export function VideoAnalysisResultPage({
               <div className={`${CARD} h-[420px] animate-pulse lg:h-auto`} />
             </div>
           ) : (
-            <div className="mt-6 grid gap-6 lg:min-h-[440px] lg:flex-1 lg:grid-cols-2 lg:grid-rows-[minmax(0,1fr)]">
+            <div className="mt-6 grid gap-6 lg:grid-cols-2">
               <section className={CARD}>
                 <ReportViewer
                   videoId={videoId}
                   page={currentPage}
                   totalPages={data.totalPages}
                   onPageChange={setPage}
-                  highlight={highlight}
+                  highlightQuotes={highlightQuotes}
                   highlightRects={highlightRects}
                 />
               </section>
 
-              <section className={`${CARD} flex flex-col`}>
+              {/* lg:h-0 + min-h-full: 오른쪽 내용 길이는 줄 높이에 영향을 주지 않고, 왼쪽 원문 카드 높이에 맞춘다 */}
+              <section className={`${CARD} flex flex-col lg:h-0 lg:min-h-full`}>
                 {editingKey ? (
                   <ExtractedFieldEditor
                     key={editingKey}
@@ -211,6 +216,7 @@ export function VideoAnalysisResultPage({
                       <ExtractedInfoList
                         items={items}
                         selectedKey={selected?.fieldKey}
+                        currentPage={currentPage}
                         onShowSource={showSource}
                         onEdit={startEdit}
                       />

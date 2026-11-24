@@ -15,6 +15,16 @@ export interface SourceRect {
   height: number;
 }
 
+/** 근거 문장 1개 (원문 페이지, 문장, 위치) */
+export interface ExtractedSource {
+  /** 원문 페이지 (1부터) */
+  page: number;
+  /** 근거 문장 */
+  text: string;
+  /** 문장 위치. 원문에서 못 찾았거나 글자가 없는 페이지면 null */
+  rects: SourceRect[] | null;
+}
+
 export interface ExtractedItem {
   fieldKey: ExtractedFieldKey;
   /** 지금 보여주는 내용 (사용자가 고쳤으면 고친 내용) */
@@ -33,6 +43,11 @@ export interface ExtractedItem {
    * 글자가 없는 페이지(스캔본 등)면 null
    */
   sourceRects: SourceRect[] | null;
+  /**
+   * 근거 여러 개 (요약에 쓴 내용마다 하나씩). 서버가 아직 안 주면 없음 →
+   * sourcePage·sourceText·sourceRects 하나로 대신한다 (getItemSources)
+   */
+  sources?: ExtractedSource[];
   /** 사용자가 마지막으로 고친 시각 (ISO). 안 고쳤으면 null */
   editedAt: string | null;
 }
@@ -44,7 +59,10 @@ export interface AnalysisResultResponse {
 
 export interface ReportPageResponse {
   pageNo: number;
-  /** 페이지에서 뽑은 글자. 스캔본처럼 글자를 뽑을 수 없으면 빈 문자열 */
+  /**
+   * 페이지에서 뽑은 글자. 스캔본처럼 글자를 뽑을 수 없으면 빈 문자열.
+   * 화면에는 이미지만 보여주고, 이 값은 쓰지 않는다 (서버가 근거 좌표를 찾을 때 사용)
+   */
   text: string;
   /** 페이지 이미지 주소 (일정 시간 뒤 만료). 이미지가 없으면 null */
   imageUrl: string | null;
@@ -77,4 +95,24 @@ export function useReportPage(videoId: string, page: number) {
     },
     placeholderData: keepPreviousData,
   });
+}
+
+/** 항목의 근거 목록. 예전 형식(근거 1개)도 같은 모양으로 바꿔 준다 */
+export function getItemSources(item: ExtractedItem): ExtractedSource[] {
+  if (item.sources?.length) return item.sources;
+  if (item.sourcePage === null) return [];
+  return [
+    {
+      page: item.sourcePage,
+      text: item.sourceText ?? "",
+      rects: item.sourceRects,
+    },
+  ];
+}
+
+/** 근거가 있는 페이지들 (작은 순, 중복 없이) */
+export function getSourcePages(item: ExtractedItem): number[] {
+  return [...new Set(getItemSources(item).map((source) => source.page))].sort(
+    (a, b) => a - b,
+  );
 }

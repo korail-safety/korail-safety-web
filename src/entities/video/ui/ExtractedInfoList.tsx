@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib";
 
-import type { ExtractedItem } from "../api/analysisResult";
+import { getSourcePages, type ExtractedItem } from "../api/analysisResult";
 import {
   EXTRACTED_FIELD,
   EXTRACTED_FIELD_ORDER,
@@ -11,7 +11,9 @@ interface ExtractedInfoListProps {
   items: ExtractedItem[];
   /** 원문에서 근거를 보고 있는 항목 */
   selectedKey?: ExtractedFieldKey;
-  onShowSource: (item: ExtractedItem) => void;
+  /** 원문에서 보고 있는 페이지 (선택한 항목의 근거 페이지 표시용) */
+  currentPage?: number;
+  onShowSource: (item: ExtractedItem, page: number) => void;
   onEdit: (key: ExtractedFieldKey) => void;
 }
 
@@ -19,6 +21,7 @@ interface ExtractedInfoListProps {
 export function ExtractedInfoList({
   items,
   selectedKey,
+  currentPage,
   onShowSource,
   onEdit,
 }: ExtractedInfoListProps) {
@@ -27,9 +30,10 @@ export function ExtractedInfoList({
   ).filter((item): item is ExtractedItem => !!item);
 
   return (
-    <ul className="grid h-full divide-y divide-canvas border-t border-canvas [grid-auto-rows:1fr]">
+    <ul className="grid min-h-full divide-y divide-canvas border-t border-canvas [grid-auto-rows:1fr]">
       {sorted.map((item) => {
         const selected = item.fieldKey === selectedKey;
+        const pages = getSourcePages(item);
         return (
           <li
             key={item.fieldKey}
@@ -46,21 +50,35 @@ export function ExtractedInfoList({
               {item.content}
             </p>
             <div className="mt-auto flex items-center justify-between pt-2 text-xs">
-              {item.sourcePage === null ? (
+              {pages.length === 0 ? (
                 // AI가 문서에서 근거를 특정하지 못한 항목
                 <span className="text-ink-secondary">원문 근거 없음</span>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => onShowSource(item)}
-                  aria-pressed={selected}
-                  className={cn(
-                    "cursor-pointer underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current",
-                    selected ? "font-bold text-primary" : "text-ink-secondary",
-                  )}
-                >
-                  원문 p.{item.sourcePage} 보기
-                </button>
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+                  <span className="text-ink-secondary">원문 근거</span>
+                  {pages.map((page) => {
+                    const active = selected && page === currentPage;
+                    return (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => onShowSource(item, page)}
+                        aria-pressed={active}
+                        aria-label={`원문 ${page}페이지 근거 보기`}
+                        className={cn(
+                          "cursor-pointer underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current",
+                          active
+                            ? "font-bold text-primary"
+                            : selected
+                              ? "text-primary"
+                              : "text-ink-secondary",
+                        )}
+                      >
+                        p.{page}
+                      </button>
+                    );
+                  })}
+                </div>
               )}
               <button
                 type="button"

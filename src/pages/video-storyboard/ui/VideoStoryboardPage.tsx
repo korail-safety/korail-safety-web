@@ -143,6 +143,11 @@ export function VideoStoryboardPage({ videoId }: { videoId: string }) {
                   if (promptError) setPromptError(undefined);
                 }}
               />
+              {inProgress && (
+                <p className="ml-auto -mt-2 text-xs mb-5 text-ink-secondary">
+                  ⓘ 스토리보드를 만드는 동안에는 입력할 수 없어요.
+                </p>
+              )}
               <Button
                 variant="secondary"
                 className="-mt-2 self-end px-8"
@@ -151,11 +156,6 @@ export function VideoStoryboardPage({ videoId }: { videoId: string }) {
               >
                 {revise.isPending ? "요청 중..." : "수정하기"}
               </Button>
-              {inProgress && (
-                <p className="mt-3 text-xs text-ink-secondary">
-                  ⓘ 스토리보드를 만드는 동안에는 입력할 수 없어요.
-                </p>
-              )}
             </section>
           </div>
 
