@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useReportPage, type SourceRect } from "@/entities/video";
 import { cn } from "@/shared/lib";
@@ -69,6 +69,15 @@ function SourceQuotes({ texts }: { texts: string[] }) {
   );
 }
 
+/** 이미지가 없을 때 A4 크기 자리에 안내 문구 */
+function PagePlaceholder({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex aspect-[210/297] w-full items-center justify-center rounded-control bg-canvas/70 px-5 text-center text-ink-secondary">
+      {children}
+    </div>
+  );
+}
+
 /** 페이지 이미지(가로에 맞춤) + 근거 위치에 반투명 박스 */
 function PageImage({
   src,
@@ -85,47 +94,49 @@ function PageImage({
   const rectsKey = JSON.stringify(rects ?? []);
   const firstRectRef = useRef<HTMLDivElement>(null);
 
-  // 이미지가 다 그려진 뒤에 박스 위치로 스크롤 (그 전에는 높이가 0이라 위치가 틀림)
+  // 이미지가 다 그려진 뒤, 박스가 화면 밖에 있을 때만 보이는 곳까지 스크롤
+  // (그 전에는 높이가 0이라 위치가 틀림)
   useEffect(() => {
     if (loaded) {
       firstRectRef.current?.scrollIntoView({
-        block: "center",
+        block: "nearest",
         behavior: "smooth",
       });
     }
   }, [loaded, rectsKey]);
 
   return (
-    // 가로로 긴 페이지처럼 A4보다 짧으면 세로 가운데에 둔다
-    <div className="flex min-h-full flex-col justify-center gap-3">
-      <div className="relative">
-        {/* 서버가 주는 S3 임시 주소라 next/image 최적화 대상이 아님 */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt={`원문 ${pageNo}페이지`}
-          onLoad={() => setLoaded(true)}
-          className={cn(
-            "block w-full rounded-sm bg-white shadow-sm transition-opacity",
-            loaded ? "opacity-100" : "opacity-0",
-          )}
-        />
-        {loaded &&
-          boxes.map((rect, index) => (
-            <div
-              key={index}
-              ref={index === 0 ? firstRectRef : undefined}
-              aria-hidden
-              className="pointer-events-none absolute animate-fade-in rounded-[2px] bg-highlight-mark/50 mix-blend-multiply"
-              style={{
-                left: `${rect.x * 100}%`,
-                top: `${rect.y * 100}%`,
-                width: `${rect.width * 100}%`,
-                height: `${rect.height * 100}%`,
-              }}
-            />
-          ))}
-      </div>
+    <div className="relative">
+      {/* 이미지를 불러오는 동안은 A4 크기 자리를 잡아 둬서 화면이 들썩이지 않게 */}
+      {!loaded && (
+        <div className="aspect-[210/297] w-full animate-pulse rounded-control bg-canvas" />
+      )}
+      {/* 서버가 주는 S3 임시 주소라 next/image 최적화 대상이 아님 */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={`원문 ${pageNo}페이지`}
+        onLoad={() => setLoaded(true)}
+        className={cn(
+          "w-full rounded-control border border-canvas bg-white",
+          loaded ? "block animate-fade-in" : "absolute inset-0 opacity-0",
+        )}
+      />
+      {loaded &&
+        boxes.map((rect, index) => (
+          <div
+            key={index}
+            ref={index === 0 ? firstRectRef : undefined}
+            aria-hidden
+            className="pointer-events-none absolute animate-fade-in rounded-[2px] bg-highlight-mark/50 mix-blend-multiply"
+            style={{
+              left: `${rect.x * 100}%`,
+              top: `${rect.y * 100}%`,
+              width: `${rect.width * 100}%`,
+              height: `${rect.height * 100}%`,
+            }}
+          />
+        ))}
     </div>
   );
 }
@@ -154,7 +165,7 @@ export function ReportViewer({
             onClick={() => onPageChange(page - 1)}
           >
             <ChevronLeftIcon width={7} height={10} />
-            <span className="mb-0.5">이전</span>
+            <span>이전</span>
           </Button>
           <span className="min-w-12 text-center text-xs text-ink-secondary tabular-nums">
             {page}/{totalPages}
@@ -166,7 +177,7 @@ export function ReportViewer({
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
           >
-            <span className="mb-0.5">다음</span>
+            <span>다음</span>
             <ChevronLeftIcon width={7} height={10} className="rotate-180" />
           </Button>
         </div>
@@ -179,14 +190,15 @@ export function ReportViewer({
         </div>
       )}
 
+      {/* 페이지 이미지 자체가 원문 영역 (따로 테두리 상자를 두지 않음) */}
       <div
-        // 보고서는 대부분 A4(210×297)라 영역도 A4 비율로 두면 한 페이지가 딱 맞게 들어간다.
-        // A4보다 긴 페이지만 안에서 스크롤된다
-        className="mt-4 aspect-[210/297] w-full overflow-y-auto rounded-control bg-canvas/70 p-3 text-[13px] leading-relaxed text-ink transition-opacity"
+        className="mt-4 text-[13px] text-ink transition-opacity"
         style={{ opacity: isFetching ? 0.6 : 1 }}
       >
         {isError ? (
-          <p className="p-2 text-danger">원문을 불러오지 못했습니다.</p>
+          <PagePlaceholder>
+            <span className="text-danger">원문을 불러오지 못했습니다.</span>
+          </PagePlaceholder>
         ) : data?.imageUrl ? (
           <PageImage
             key={data.imageUrl}
@@ -196,13 +208,9 @@ export function ReportViewer({
           />
         ) : data ? (
           // 페이지 이미지를 만들지 못한 경우 (이미지 저장 기능 전에 분석한 작업 등)
-          <div className="flex flex-col gap-3">
-            <p className="p-2 text-ink-secondary">
-              원문 이미지를 불러올 수 없습니다.
-            </p>
-          </div>
+          <PagePlaceholder>원문 이미지를 불러올 수 없습니다.</PagePlaceholder>
         ) : (
-          <p className="p-2 text-ink-secondary">원문을 불러오는 중...</p>
+          <PagePlaceholder>원문을 불러오는 중...</PagePlaceholder>
         )}
       </div>
     </div>

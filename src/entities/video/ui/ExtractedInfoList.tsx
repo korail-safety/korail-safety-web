@@ -7,6 +7,20 @@ import {
   type ExtractedFieldKey,
 } from "../model/enums";
 
+/** AI가 "문서에 없다"는 뜻으로 쓰는 문장 */
+const NOT_FOUND_PATTERN =
+  /(제시|명시|기재|언급|포함|기술|나와)\s*(되어|돼)?\s*있지\s*않|찾을\s*수\s*없|확인할\s*수\s*없/;
+
+/**
+ * 문서에서 내용을 못 찾은 항목인지.
+ * 실제 사실("원인이 확인되지 않았다" 등)을 잘못 걸러내지 않도록 근거가 하나도 없을 때만 문장을 본다
+ */
+function isNotFound(item: ExtractedItem) {
+  const content = item.content.trim();
+  if (!content) return true;
+  return getSourcePages(item).length === 0 && NOT_FOUND_PATTERN.test(content);
+}
+
 interface ExtractedInfoListProps {
   items: ExtractedItem[];
   /** 원문에서 근거를 보고 있는 항목 */
@@ -46,9 +60,16 @@ export function ExtractedInfoList({
             <p className="text-sm font-bold text-ink">
               {EXTRACTED_FIELD[item.fieldKey]}
             </p>
-            <p className="mt-1.5 text-[13px] leading-relaxed whitespace-pre-wrap text-ink">
-              {item.content}
-            </p>
+            {isNotFound(item) ? (
+              // 문서에 없는 항목은 안내 문구라 회색으로 (수정하기로 직접 채울 수 있음)
+              <p className="mt-1.5 text-[13px] leading-relaxed whitespace-pre-wrap text-ink-disabled">
+                {item.content.trim() || "문서에서 찾지 못했습니다."}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-[13px] leading-relaxed whitespace-pre-wrap text-ink">
+                {item.content}
+              </p>
+            )}
             <div className="mt-auto flex items-center justify-between pt-2 text-xs">
               {pages.length === 0 ? (
                 // AI가 문서에서 근거를 특정하지 못한 항목
