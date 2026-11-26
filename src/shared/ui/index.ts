@@ -1,5 +1,6 @@
 export * from "./alert";
 export * from "./badge";
+export * from "./brand-logo";
 export * from "./button";
 export * from "./checkbox";
 export * from "./confirm-dialog";
@@ -10,6 +11,7 @@ export * from "./file-item";
 export * from "./icons";
 export * from "./input-dialog";
 export * from "./more-menu";
+export * from "./pager";
 export * from "./progress-bar";
 export * from "./search-input";
 export * from "./select";

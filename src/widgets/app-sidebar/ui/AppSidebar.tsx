@@ -8,6 +8,7 @@ import { useMe } from "@/entities/session";
 import { LogoutButton } from "@/features/logout";
 import { ROUTES } from "@/shared/config";
 import { cn } from "@/shared/lib";
+import { BrandLogo } from "@/shared/ui";
 
 const NAV_ITEMS = [
   { label: "영상 제작", href: ROUTES.videoCreate },
@@ -17,9 +18,9 @@ const NAV_ITEMS = [
 
 function Brand() {
   return (
-    <div className="px-1">
-      <p className="text-xl font-bold text-white">KORAIL</p>
-      <p className="mt-3 text-[11px] font-semibold text-on-navy-subtle">
+    <div className="px-1 mt-2">
+      <BrandLogo className="h-6" priority />
+      <p className="mt-4 text-[11px] font-semibold text-on-navy-subtle">
         안전교육 영상 제작
       </p>
     </div>
@@ -95,7 +96,7 @@ export function AppSidebar() {
 
       {/* 모바일·태블릿: 상단 바 + 서랍 메뉴 */}
       <div className="sticky top-0 z-30 flex h-14 items-center justify-between bg-navy px-5 lg:hidden">
-        <p className="text-lg font-bold text-white">KORAIL</p>
+        <BrandLogo className="h-5" priority />
         <button
           type="button"
           aria-label="메뉴 열기"
