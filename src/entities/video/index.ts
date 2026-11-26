@@ -46,6 +46,7 @@ export {
   useStartStoryboard,
   useStoryboard,
   type StoryboardResponse,
+  type StoryboardScene,
 } from "./api/storyboard";
 export {
   VIDEO_CREATION_STEP,

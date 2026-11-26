@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useReportPage, type SourceRect } from "@/entities/video";
 import { cn } from "@/shared/lib";
-import { Button, ChevronLeftIcon } from "@/shared/ui";
+import { Pager } from "@/shared/ui";
 
 interface ReportViewerProps {
   videoId: string;
@@ -156,31 +156,12 @@ export function ReportViewer({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-ink">원문 보기</h2>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            className="items-center h-9 gap-1.5 px-3 text-[13px]"
-            disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
-          >
-            <ChevronLeftIcon width={7} height={10} />
-            <span>이전</span>
-          </Button>
-          <span className="min-w-12 text-center text-xs text-ink-secondary tabular-nums">
-            {page}/{totalPages}
-          </span>
-          <Button
-            variant="secondary"
-            size="sm"
-            className="items-center h-9 gap-1.5 px-3 text-[13px]"
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-          >
-            <span>다음</span>
-            <ChevronLeftIcon width={7} height={10} className="rotate-180" />
-          </Button>
-        </div>
+        <Pager
+          page={page}
+          total={totalPages}
+          onChange={onPageChange}
+          label="원문 페이지"
+        />
       </div>
 
       {!!highlightQuotes?.length && (
