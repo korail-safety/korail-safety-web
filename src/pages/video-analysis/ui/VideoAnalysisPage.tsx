@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import {
   ANALYSIS_JOB_STEPS,
@@ -13,8 +13,11 @@ import {
   VIDEO_CREATION_STEP,
   VIDEO_CREATION_STEPS,
 } from "@/entities/video";
+import { useCancelAnalysis } from "@/features/cancel-analysis";
+import { getApiErrorCode } from "@/shared/api";
 import { ROUTES } from "@/shared/config";
-import { DocumentIcon } from "@/shared/ui";
+import { useUnsavedChangesGuard } from "@/shared/lib";
+import { ConfirmDialog, DocumentIcon, Toast } from "@/shared/ui";
 import { AppTopBar } from "@/widgets/app-top-bar";
 import { JobErrorCard, JobProgressCard } from "@/widgets/job-status";
 
@@ -27,8 +30,33 @@ export function VideoAnalysisPage({ videoId }: VideoAnalysisPageProps) {
   const queryClient = useQueryClient();
   const { data, isError } = useAnalysisStatus(videoId);
   const retry = useStartAnalysis();
+  const cancel = useCancelAnalysis(videoId);
+  const [error, setError] = useState<{ id: number; message: string }>();
 
   const status = data?.status;
+  // 분석이 도는 중에는 사이드바 이동·로그아웃 때 "분석이 중단된다"고 묻는다
+  const analyzing = status === "IN_PROGRESS" || retry.isPending;
+  const leaveGuard = useUnsavedChangesGuard(false, {
+    confirmLeave: analyzing,
+  });
+
+  /** "나가기": 분석을 중단(작업 삭제)한 뒤 원래 하려던 이동을 진행한다 */
+  const handleCancelAndLeave = () =>
+    cancel.mutate(undefined, {
+      onSuccess: leaveGuard.confirm,
+      onError: (err) => {
+        // 이미 지워진 작업이면 그대로 나간다
+        if (getApiErrorCode(err) === "VIDEO_NOT_FOUND") {
+          leaveGuard.confirm();
+          return;
+        }
+        leaveGuard.cancel();
+        setError({
+          id: Date.now(),
+          message: "분석을 중단하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        });
+      },
+    });
 
   // 분석이 끝나면 완료 표시를 잠깐 보여준 뒤 결과 확인 화면으로 이동
   useEffect(() => {
@@ -77,7 +105,7 @@ export function VideoAnalysisPage({ videoId }: VideoAnalysisPageProps) {
             title="보고서를 분석하고 있습니다"
             completedTitle="분석이 완료되었습니다"
             completedDescription="결과 확인 화면으로 이동합니다."
-            footnote="분석이 완료되면 자동으로 다음 단계로 이동합니다. 이 화면을 벗어나도 분석은 계속돼요."
+            footnote="분석이 완료되면 자동으로 다음 단계로 이동합니다. 이 화면을 벗어나면 분석이 중단돼요."
             steps={ANALYSIS_JOB_STEPS}
             currentStep={data?.step}
             estimatedMinutes={data?.estimatedMinutes}
@@ -86,6 +114,34 @@ export function VideoAnalysisPage({ videoId }: VideoAnalysisPageProps) {
           />
         )}
       </main>
+
+      <ConfirmDialog
+        open={leaveGuard.reason === "leave"}
+        title="지금 나가면 분석이 중단됩니다"
+        description={
+          "업로드한 보고서와 분석 내용이 삭제되고 복구할 수 없어요.\n그래도 나가시겠어요?"
+        }
+        cancelLabel="분석 계속하기"
+        confirmLabel={cancel.isPending ? "중단 중..." : "나가기"}
+        danger
+        dismissible={!cancel.isPending}
+        onCancel={leaveGuard.cancel}
+        onConfirm={() => {
+          if (!cancel.isPending) handleCancelAndLeave();
+        }}
+      />
+
+      {error && (
+        <div className="fixed right-5 bottom-5 left-5 z-50 flex justify-end lg:left-auto lg:w-[720px]">
+          <Toast
+            key={error.id}
+            variant="error"
+            message={error.message}
+            duration={4000}
+            onClose={() => setError(undefined)}
+          />
+        </div>
+      )}
     </>
   );
 }

@@ -19,10 +19,12 @@ import {
   useUpdateExtractedField,
 } from "@/features/edit-extracted-field";
 import { useSaveVideoDraft } from "@/features/save-video-draft";
+import { getApiErrorCode } from "@/shared/api";
 import { ROUTES } from "@/shared/config";
 import { useUnsavedChangesGuard } from "@/shared/lib";
 import { Button, ConfirmDialog, Toast } from "@/shared/ui";
 import { AppTopBar } from "@/widgets/app-top-bar";
+import { LeaveWorkDialog } from "@/widgets/leave-work-dialog";
 import { ReportViewer } from "@/widgets/report-viewer";
 
 interface VideoAnalysisResultPageProps {
@@ -79,7 +81,13 @@ export function VideoAnalysisResultPage({
     (item) => item.fieldKey === editingKey,
   )?.content;
   const dirty = editingKey !== null && draft.trim() !== originalContent;
-  const leaveGuard = useUnsavedChangesGuard(dirty);
+  // "임시저장" 버튼을 눌렀으면 이 화면에서는 다시 묻지 않는다
+  // (작업 내용은 서버에 바로 저장되므로, 이후 나갈 때는 쓰다 만 입력만 확인)
+  const [draftSaved, setDraftSaved] = useState(false);
+  // 사이드바 이동·로그아웃 때는 임시저장/삭제를 묻는다
+  const leaveGuard = useUnsavedChangesGuard(dirty, {
+    confirmLeave: !draftSaved,
+  });
 
   /** page를 안 주면 첫 번째 근거 페이지로. 근거가 없으면 보고 있던 페이지 그대로 */
   const showSource = (item: ExtractedItem, sourcePage?: number) => {
@@ -132,7 +140,10 @@ export function VideoAnalysisResultPage({
 
   const handleSaveDraft = () =>
     saveDraft.mutate(undefined, {
-      onSuccess: () => showToast("success", "임시저장되었습니다."),
+      onSuccess: () => {
+        setDraftSaved(true);
+        showToast("success", "임시저장되었습니다.");
+      },
       onError: () =>
         showToast(
           "error",
@@ -143,11 +154,17 @@ export function VideoAnalysisResultPage({
   const handleNext = () =>
     startStoryboard.mutate(undefined, {
       onSuccess: () => router.push(ROUTES.videoStoryboard(videoId)),
-      onError: () =>
+      onError: (error) => {
+        // 스토리보드 화면에 갔다가 돌아온 경우: 이미 만든 스토리보드로 그냥 이동
+        if (getApiErrorCode(error) === "STORYBOARD_ALREADY_EXISTS") {
+          router.push(ROUTES.videoStoryboard(videoId));
+          return;
+        }
         showToast(
           "error",
           "스토리보드를 만들지 못했습니다. 잠시 후 다시 시도해 주세요.",
-        ),
+        );
+      },
     });
 
   return (
@@ -272,8 +289,16 @@ export function VideoAnalysisResultPage({
         </main>
       </div>
 
+      <LeaveWorkDialog
+        open={leaveGuard.reason === "leave"}
+        videoId={videoId}
+        hasUnsavedInput={dirty}
+        onLeave={leaveGuard.confirm}
+        onCancel={leaveGuard.cancel}
+      />
+
       <ConfirmDialog
-        open={leaveGuard.pending}
+        open={leaveGuard.reason === "dirty"}
         title="저장하지 않은 내용이 있습니다"
         description="지금 나가면 수정한 내용이 사라져요. 그래도 나가시겠어요?"
         cancelLabel="계속 수정"

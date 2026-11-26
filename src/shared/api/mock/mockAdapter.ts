@@ -14,6 +14,7 @@ import {
 import {
   getMockStoryboard,
   hasMockStoryboard,
+  reviseMockScene,
   startMockStoryboard,
 } from "./storyboardData";
 
@@ -33,7 +34,8 @@ import {
  * - 보고서 분석: 4초마다 다음 단계로 진행, 8초 뒤 완료
  * - 분석 결과 수정: 내용에 "fail" 이 들어가면 저장 실패
  * - 스토리보드: 5초 뒤 완성. 수정 프롬프트에 "fail" 이 들어가면 실패
- *   /videos/storyboard-fail/storyboard 로 들어가면 처음부터 실패 (다시 만들기 누르면 성공)
+ *   /videos/storyboard-fail/storyboard 로 들어가면 장면 구성부터 실패 (다시 만들기 누르면 성공)
+ *   /videos/scene-fail/storyboard 로 들어가면 5번 장면만 실패. 수정 요청에 "fail"이 있으면 그 장면 실패
  * - 영상 저장: 파일명에 "fail" 이 들어가면 저장 실패
  * - 사고 유형: "새 유형 만들기"를 고르면 바로 목록에 추가됨 (새로고침 전까지 유지)
  *   이름 수정·삭제 가능. 라이브러리에 그 유형 영상이 있으면 삭제 불가(409)
@@ -373,6 +375,11 @@ export const mockAdapter: AxiosAdapter = async (config) => {
       analysisStartedAt.set(videoId, Date.now());
       return ok(config, null, 202);
     }
+    if (method === "DELETE") {
+      // 분석 중단 (작업 삭제)
+      analysisStartedAt.delete(videoId);
+      return ok(config, null, 204);
+    }
     return ok(config, getAnalysisStatus(videoId));
   }
 
@@ -456,16 +463,22 @@ export const mockAdapter: AxiosAdapter = async (config) => {
   if (storyboardMatch) {
     const videoId = storyboardMatch[1];
     if (method === "POST") {
-      startMockStoryboard(videoId);
+      if (!startMockStoryboard(videoId)) {
+        return fail(config, 409, "STORYBOARD_ALREADY_EXISTS");
+      }
       return ok(config, null, 202);
     }
     return ok(config, getMockStoryboard(videoId));
   }
   const revisionMatch = url.match(/^\/videos\/([^/]+)\/storyboard\/revisions$/);
   if (method === "POST" && revisionMatch) {
-    const { prompt } = parseBody(config);
-    if (!prompt?.trim()) return fail(config, 400, "INVALID_INPUT");
-    startMockStoryboard(revisionMatch[1], prompt);
+    const body = parseBody(config) as { sceneIndex?: number; prompt?: string };
+    if (!body.prompt?.trim()) return fail(config, 400, "INVALID_INPUT");
+    if (
+      !reviseMockScene(revisionMatch[1], Number(body.sceneIndex), body.prompt)
+    ) {
+      return fail(config, 400, "INVALID_INPUT");
+    }
     return ok(config, null, 202);
   }
 
