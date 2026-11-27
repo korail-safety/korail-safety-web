@@ -137,7 +137,7 @@ export function VideoStoryboardPage({ videoId }: { videoId: string }) {
         currentIndex={VIDEO_CREATION_STEP.storyboard}
       />
       <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
-        <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-5 pt-6 pb-8 sm:px-6 lg:px-[35px] lg:pt-[33px]">
+        <main className="mx-auto flex w-full max-w-[1280px] 2xl:max-w-[1600px] flex-1 flex-col px-5 pt-6 pb-8 sm:px-6 lg:px-[35px] lg:pt-[33px]">
           <h1 className="text-2xl font-bold text-ink sm:text-[28px]">
             스토리보드 확인
           </h1>

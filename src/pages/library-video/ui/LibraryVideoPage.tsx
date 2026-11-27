@@ -22,7 +22,7 @@ export function LibraryVideoPage({ videoId }: { videoId: string }) {
     <>
       <AppTopBar items={["라이브러리", "영상 시청"]} currentIndex={1} />
       <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-y-auto lg:[scrollbar-gutter:stable]">
-        <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-5 pt-6 pb-8 sm:px-8 lg:px-[35px] lg:pt-[33px]">
+        <main className="mx-auto flex w-full max-w-[1280px] 2xl:max-w-[1600px] flex-1 flex-col px-5 pt-6 pb-8 sm:px-8 lg:px-[35px] lg:pt-[33px]">
           {isError ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-card bg-white px-5 py-16 text-center">
               <p className="text-[15px] text-ink">
